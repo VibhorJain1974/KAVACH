@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --void: #020408;
+  --cosmos: #050d18;
+  --nebula: #0a1628;
+  --aurora-red: #ff2d4a;
+  --aurora-orange: #ff6b35;
+  --aurora-yellow: #ffd23f;
+  --aurora-green: #00ff88;
+  --plasma: #4df0ff;
+  --solar: #ffaa00;
+  --risk-green: #00ff88;
+  --risk-yellow: #ffd23f;
+  --risk-orange: #ff6b35;
+  --risk-red: #ff2d4a;
+  --star-dim: rgba(255,255,255,0.12);
+  --star-bright: rgba(255,255,255,0.55);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--void);
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.font-display { font-family: 'Syne', sans-serif; }
+.font-mono { font-family: 'DM Mono', monospace; }
+
+/* Glow effects */
+.glow-red { text-shadow: 0 0 16px var(--aurora-red), 0 0 40px rgba(255,45,74,0.35); }
+.glow-green { text-shadow: 0 0 16px var(--aurora-green), 0 0 40px rgba(0,255,136,0.35); }
+.glow-plasma { text-shadow: 0 0 16px var(--plasma), 0 0 40px rgba(77,240,255,0.35); }
+.glow-solar { text-shadow: 0 0 16px var(--solar), 0 0 40px rgba(255,170,0,0.35); }
+
+/* Box glow */
+.box-glow-red { box-shadow: 0 0 24px rgba(255,45,74,0.25), inset 0 0 24px rgba(255,45,74,0.06); }
+.box-glow-green { box-shadow: 0 0 24px rgba(0,255,136,0.2), inset 0 0 24px rgba(0,255,136,0.04); }
+.box-glow-plasma { box-shadow: 0 0 24px rgba(77,240,255,0.2), inset 0 0 24px rgba(77,240,255,0.04); }
+
+/* Panel */
+.panel {
+  background: rgba(5,13,24,0.82);
+  border: 1px solid rgba(77,240,255,0.12);
+  border-radius: 1px;
+  backdrop-filter: blur(16px);
+}
+.panel-danger {
+  background: rgba(20,4,8,0.9);
+  border-color: rgba(255,45,74,0.35);
+}
+
+/* Animations */
+@keyframes pulse-danger {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,45,74,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(255,45,74,0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes data-stream {
+  from { transform: translateY(0); opacity: 0.7; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+
+.animate-pulse-danger { animation: pulse-danger 2s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.35s ease-out forwards; }
+.animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+.animate-blink { animation: blink 1s step-end infinite; }
+
+/* Mapbox */
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { display: none !important; }
+.mapboxgl-canvas { border-radius: 1px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(77,240,255,0.25); border-radius: 2px; }
