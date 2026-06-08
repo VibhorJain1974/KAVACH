@@ -21,8 +21,14 @@ async def fetch_current_kp() -> dict:
             if not data:
                 return {"kp": 0, "source": "NOAA", "status": "no_data"}
             latest = data[-1]
-            kp = float(latest[1]) if latest[1] else 0
-            return {"kp": kp, "time": latest[0], "source": "NOAA", "status": "ok"}
+            # Handle both object format {time_tag, estimated_kp} and legacy array format
+            if isinstance(latest, dict):
+                kp = float(latest.get("estimated_kp") or latest.get("kp_index") or 0)
+                time = latest.get("time_tag", "")
+            else:
+                kp = float(latest[1]) if latest[1] else 0
+                time = latest[0]
+            return {"kp": kp, "time": time, "source": "NOAA", "status": "ok"}
     except Exception as e:
         logger.error(f"NOAA poll failed: {e}")
         return {"kp": 0, "source": "NOAA", "status": "error", "error": str(e)}

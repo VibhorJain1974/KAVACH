@@ -110,6 +110,21 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
             "fishermen_called": "3,200",
             "time_to_alert": "< 90 seconds",
             "human_triggers": 0,
+            "timeline": {
+                "storm_start": "2024-05-10T17:05:00Z",
+                "kavach_alert": "2024-05-10T17:30:00Z",
+                "peak_impact": "2024-05-11T00:00:00Z",
+                "warning_window_hours": 4.5,
+            },
+            "damage_avoided": {
+                "transformer_cost_crore": 8.3,
+                "replacement_months": 18,
+                "total_risk_crore": 3000,
+                "kavach_cost_lakh_month": 5,
+                "roi_x": "600x",
+            },
+            "moat": "ISRO maps satellites. KAVACH maps India's last mile.",
+            "built_with": "Claude Code — autonomous build in 6 days",
         },
     })
 

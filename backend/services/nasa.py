@@ -29,7 +29,7 @@ async def fetch_cme_events(start_date: str, end_date: str) -> list[dict]:
 
 
 def load_may2024_storm() -> list[dict]:
-    data_path = Path(__file__).parent.parent.parent / "data" / "may2024_storm.json"
+    data_path = Path(__file__).parent.parent / "data" / "may2024_storm.json"
     with open(data_path) as f:
         return json.load(f)
 

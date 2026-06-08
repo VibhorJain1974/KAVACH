@@ -47,6 +47,21 @@ export interface DemoStep {
     fishermen_called: string;
     time_to_alert: string;
     human_triggers: number;
+    timeline?: {
+      storm_start: string;
+      kavach_alert: string;
+      peak_impact: string;
+      warning_window_hours: number;
+    };
+    damage_avoided?: {
+      transformer_cost_crore: number;
+      replacement_months: number;
+      total_risk_crore: number;
+      kavach_cost_lakh_month: number;
+      roi_x: string;
+    };
+    moat?: string;
+    built_with?: string;
   };
   region?: string;
 }

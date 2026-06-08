@@ -85,15 +85,32 @@ export default function DemoPanel({
       {/* Summary */}
       {isComplete && step?.summary && (
         <div style={{
-          fontSize: 9, lineHeight: 1.6,
+          fontSize: 9, lineHeight: 1.7,
           background: 'rgba(255,45,74,0.06)',
           border: '1px solid rgba(255,45,74,0.2)',
-          padding: '6px 8px', marginBottom: 10, borderRadius: 1,
+          padding: '8px 10px', marginBottom: 10, borderRadius: 1,
         }} className="animate-slide-up">
-          <div style={{ color: 'var(--aurora-red)', fontWeight: 600, marginBottom: 3, letterSpacing: '0.1em' }}>DEMO COMPLETE</div>
-          <div style={{ color: 'rgba(255,255,255,0.6)' }}>Kp={step.summary.storm_kp} · {step.summary.zones_alerted} zones</div>
-          <div style={{ color: 'rgba(255,255,255,0.6)' }}>{step.summary.farmers_called} farmers called</div>
-          <div style={{ color: 'var(--aurora-green)' }}>Human triggers: {step.summary.human_triggers}</div>
+          <div style={{ color: 'var(--aurora-red)', fontWeight: 600, marginBottom: 5, letterSpacing: '0.1em', fontSize: 10 }}>DEMO COMPLETE</div>
+          <div style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 1 }}>Kp={step.summary.storm_kp} · {step.summary.zones_alerted} zones</div>
+          <div style={{ color: 'rgba(255,255,255,0.5)', marginBottom: 1 }}>{step.summary.farmers_called} farmers called</div>
+          <div style={{ color: 'var(--aurora-green)', marginBottom: 5 }}>Human triggers: {step.summary.human_triggers}</div>
+          {step.summary.timeline && (
+            <div style={{ borderTop: '1px solid rgba(255,45,74,0.15)', paddingTop: 5, marginBottom: 5 }}>
+              <div style={{ color: 'rgba(77,240,255,0.6)', letterSpacing: '0.08em', marginBottom: 3, fontSize: 8 }}>TIMELINE — MAY 10 2024</div>
+              <div style={{ color: 'rgba(255,255,255,0.45)' }}>Storm onset · 17:05 UTC</div>
+              <div style={{ color: 'var(--aurora-yellow, #ffd23f)', fontWeight: 600 }}>KAVACH alert · 17:30 UTC</div>
+              <div style={{ color: 'rgba(255,45,74,0.8)' }}>Peak Kp=9.0 · 00:00 UTC+1</div>
+              <div style={{ color: 'var(--aurora-green)', marginTop: 2 }}>Warning window: {step.summary.timeline.warning_window_hours}h ahead</div>
+            </div>
+          )}
+          {step.summary.damage_avoided && (
+            <div style={{ borderTop: '1px solid rgba(255,45,74,0.15)', paddingTop: 5 }}>
+              <div style={{ color: 'rgba(77,240,255,0.6)', letterSpacing: '0.08em', marginBottom: 3, fontSize: 8 }}>RISK COVERED</div>
+              <div style={{ color: 'rgba(255,255,255,0.45)' }}>1 transformer = ₹8.3Cr + 18mo lead</div>
+              <div style={{ color: 'rgba(255,45,74,0.7)' }}>Total risk: ₹3,000 Cr</div>
+              <div style={{ color: 'var(--aurora-green)', fontWeight: 600 }}>KAVACH: ₹5L/mo = {step.summary.damage_avoided.roi_x} ROI</div>
+            </div>
+          )}
         </div>
       )}
 
