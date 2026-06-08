@@ -84,7 +84,31 @@ Step 5: Alert log populates (DISCOMs + farmers + fishermen)
 Step 6: Twilio Hindi call fires to demo phone
 Step 7: Summary (28 zones, 12,400 farmers, 0 human triggers)
 
-## Next Steps
-- Phase 4: Demo mode polish (audio fallback)
-- Phase 5: Deploy to Vercel + Railway
-- Phase 6: Presentation deck
+### Phase 4 — Demo Mode - COMPLETE
+- 7-step SSE replay implemented (routers/demo.py)
+- Audio fallback generated (static/hindi_alert.mp3, frontend/public/hindi_alert.mp3)
+- AudioFallback.tsx component auto-plays on Twilio failure
+
+### Phase 5 — Deploy - MOSTLY COMPLETE
+- Frontend LIVE on Vercel:
+  https://frontend-2ajotdnfi-vibhorjain1974s-projects.vercel.app
+- Backend Railway: BLOCKED on user login (code CKQJ-ZFWH at railway.com/activate)
+- README.md written with architecture diagram
+- Playwright tests written (frontend/tests/demo.spec.ts)
+- Presentation script written (PRESENTATION.md, 15 slides)
+
+### Phase 6 — Presentation - IN PROGRESS
+- PRESENTATION.md has full 15-slide script
+- Key talking points: May 2024 storm, 0 human triggers, 300M farmers
+- Demo sequence documented
+
+## Deployment URLs
+- Frontend: https://frontend-2ajotdnfi-vibhorjain1974s-projects.vercel.app
+- Backend: Pending Railway deploy (see blockers.md)
+
+## User Actions Required Before June 14
+1. Railway login: https://railway.com/activate - code CKQJ-ZFWH
+2. Supabase migration: paste backend/supabase_migration.sql in SQL Editor
+3. Record/improve hindi_alert.mp3 (current is gTTS, usable but not premium)
+4. Practice demo 5 times (task P4.5)
+5. Submit to Unstop before June 14 11:59 PM IST

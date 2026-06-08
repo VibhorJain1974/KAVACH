@@ -28,7 +28,7 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
     await delay(2)
 
     # Step 2: CME detected
-    yield event({"step": 2, "status": "detecting", "message": "⚡ CME detected — May 8 2024 X-class solar flare. Impact trajectory: Earth-directed."})
+    yield event({"step": 2, "status": "detecting", "message": "CME detected — May 8 2024 X-class solar flare. Impact trajectory: Earth-directed."})
     await delay(3)
 
     # Step 3: Load storm data
@@ -64,7 +64,7 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
     yield event({
         "step": 5,
         "status": "alerting",
-        "message": f"🚨 {affected_count} DISCOM zones at risk. Initiating farmer and fisherman alerts...",
+        "message": f"ALERT: {affected_count} DISCOM zones at risk. Initiating farmer and fisherman alerts...",
         "alert_log": [
             {"id": 1, "type": "DISCOM", "zone": "PSPCL Punjab", "status": "notified", "time": "T+0:45"},
             {"id": 2, "type": "DISCOM", "zone": "DHBVN Haryana", "status": "notified", "time": "T+0:47"},
@@ -78,14 +78,15 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
     call_result = None
     target = phone or DEMO_PHONE
     if target:
-        yield event({"step": 6, "status": "calling", "message": f"📞 Placing Hindi voice alert to {target[-4:].rjust(10, '*')}..."})
+        masked = "*" * 6 + target[-4:]
+        yield event({"step": 6, "status": "calling", "message": f"Placing Hindi voice alert to {masked}..."})
         await delay(1)
         try:
             call_result = make_alert_call(target, storm["max_kp"])
             yield event({
                 "step": 6,
                 "status": "call_placed",
-                "message": "✅ Hindi alert call placed — phone ringing now",
+                "message": "Hindi alert call placed — phone ringing now",
                 "call_sid": call_result.get("call_sid"),
                 "call_status": call_result.get("status"),
             })
@@ -100,7 +101,7 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
     yield event({
         "step": 7,
         "status": "complete",
-        "message": "✅ KAVACH demo complete — 1.4 billion Indians protected autonomously",
+        "message": "KAVACH demo complete — 1.4 billion Indians protected autonomously",
         "summary": {
             "storm_kp": storm["max_kp"],
             "severity": "EXTREME",

@@ -15,7 +15,10 @@
       "PowerShell(New-Item *)",
       "PowerShell(vercel *)",
       "PowerShell(npm install *)",
-      "PowerShell(railway *)"
+      "PowerShell(railway *)",
+      "PowerShell(Invoke-RestMethod \"http://localhost:8000/storm/may2024\" | ForEach-Object { \"Kp=$\\($_.max_kp\\) severity=$\\($_.severity\\)\" }; Invoke-RestMethod \"http://localhost:8000/health\" | ConvertTo-Json; $zones = Invoke-RestMethod \"http://localhost:8000/alerts/discoms?severity=red&kp=9.0\"; \"Zones: $\\($zones.Count\\), Affected: $\\(\\($zones | Where-Object { $_.affected }\\).Count\\)\")",
+      "PowerShell(cd E:\\\\FARAWAY\\\\backend; $env:PYTHONPATH = \".\"; python test_demo_replay.py 2>&1)",
+      "PowerShell(cd E:\\\\FARAWAY\\\\backend; $env:PYTHONPATH = \".\"; $job = Start-Job -ScriptBlock { Set-Location E:\\\\FARAWAY\\\\backend; $env:PYTHONPATH = \".\"; python -m uvicorn main:app --host 0.0.0.0 --port 8000 2>&1 }; Start-Sleep -Seconds 4; python test_demo_replay.py 2>&1)"
     ]
   }
 }
