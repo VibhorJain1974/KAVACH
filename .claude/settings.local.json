@@ -12,7 +12,10 @@
       "PowerShell(cd E:\\\\FARAWAY\\\\frontend; $proc = Start-Process npm -ArgumentList \"run\", \"dev\" -PassThru -NoNewWindow; Start-Sleep -Seconds 8; try { $r = Invoke-WebRequest http://localhost:3000 -TimeoutSec 5; Write-Host \"Frontend status: $\\($r.StatusCode\\)\" } catch { Write-Host \"Frontend error: $_\" }; $proc.Id)",
       "PowerShell(Out-Null *)",
       "PowerShell(Copy-Item *)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "PowerShell(vercel *)",
+      "PowerShell(npm install *)",
+      "PowerShell(railway *)"
     ]
   }
 }
