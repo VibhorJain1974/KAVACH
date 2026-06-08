@@ -1,0 +1,9 @@
+.env
+.env.local
+frontend/.env.local
+frontend/node_modules/
+frontend/.next/
+__pycache__/
+*.pyc
+.DS_Store
+backend/test_*.py
