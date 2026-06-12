@@ -200,7 +200,13 @@ function buildFallbackBrief(kp: number): ShieldBrief {
   return {
     score, kp, date, gps_status, grid_risk, actions,
     cme_inbound: false,
-    hindi: `KAVACH Suraksha Sandesh - ${date}\nAaj ka Space Weather Score: ${score}/100\nGPS Shuddhata: ${gps_status}\nGrid Suraksha: ${grid_risk}\nKisi bhi samasya ke liye: KAVACH active hai.`,
+    hindi: [
+      `KAVACH सुरक्षा संदेश — ${date}`,
+      `आज का स्पेस वेदर स्कोर: ${score}/100`,
+      `GPS शुद्धता: ${kp >= 7 ? 'गंभीर रूप से खराब' : kp >= 5 ? 'मध्यम गिरावट' : kp >= 3 ? 'मामूली गिरावट' : 'सामान्य'}`,
+      `ग्रिड सुरक्षा: ${kp >= 7 ? 'उच्च' : kp >= 5 ? 'बढ़ा हुआ' : 'न्यूनतम'}`,
+      `किसी भी समस्या के लिए: KAVACH सक्रिय है।`,
+    ].join('\n'),
     english: `KAVACH Daily Shield - ${date}\nSpace Weather Score: ${score}/100\nKp Current: ${kp.toFixed(1)}\nGPS Status: ${gps_status}\nGrid Risk: ${grid_risk}`,
   };
 }

@@ -88,6 +88,10 @@ export default function LandingPage() {
     <div className="landing-root">
 
         <div className="stars-layer" />
+        <div className="stars-sm" />
+        <div className="stars-md" />
+        <div className="stars-lg" />
+        <div className="shooting-stars" />
 
         {/* Navigation */}
         <nav className="landing-nav">
