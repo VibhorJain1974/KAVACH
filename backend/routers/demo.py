@@ -2,7 +2,9 @@
 import asyncio
 import json
 import os
-from fastapi import APIRouter
+import re
+import httpx
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from dotenv import dotenv_values
 from twilio.rest import Client as TwilioClient
@@ -205,15 +207,35 @@ async def trigger_demo_call(phones: str = None):
 
 @router.get("/recording")
 async def get_recording(call_sid: str):
-    """Fetch Twilio recording URL for a call SID. Returns ready=False while call is still in progress."""
+    """Check if a recording is ready. Returns a proxy URL (no Twilio auth needed in browser)."""
     try:
         client = TwilioClient(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
         recordings = client.recordings.list(call_sid=call_sid, limit=1)
         if not recordings:
             return {"ready": False, "call_sid": call_sid}
         rec = recordings[0]
-        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{rec.sid}.mp3"
-        return {"ready": True, "url": url, "duration": rec.duration, "sid": rec.sid}
+        # Return proxy URL — browser fetches audio through our backend (avoids Twilio 401 login prompt)
+        proxy_url = f"/demo/recording-audio?sid={rec.sid}"
+        return {"ready": True, "url": proxy_url, "duration": rec.duration, "sid": rec.sid}
     except Exception as e:
         return {"ready": False, "error": str(e)}
+
+
+_RECORDING_SID_RE = re.compile(r'^RE[0-9a-fA-F]{32}$')
+
+@router.get("/recording-audio")
+async def proxy_recording_audio(sid: str):
+    """Stream Twilio recording MP3 through our backend so the browser doesn't need Twilio credentials."""
+    if not _RECORDING_SID_RE.fullmatch(sid):
+        raise HTTPException(status_code=400, detail="Invalid recording SID")
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    twilio_url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{sid}.mp3"
+    async with httpx.AsyncClient() as client:
+        r = await client.get(twilio_url, auth=(account_sid, auth_token))
+        r.raise_for_status()
+        return StreamingResponse(
+            iter([r.content]),
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": f"inline; filename=kavach-call-{sid[:8]}.mp3"},
+        )

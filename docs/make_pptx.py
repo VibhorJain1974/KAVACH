@@ -421,7 +421,7 @@ rows = [
     ("DATABASE",  "Supabase",
      "PostgreSQL  +  realtime  |  28 DISCOMs  +  alert log  +  v2 tables",  GREEN),
     ("VOICE",     "Twilio + Polly",
-     "Amazon Polly Aditi (hi-IN)  |  TTS -> MP3 fallback  |  multi-number parallel calls",    GREEN),
+     "Amazon Polly Aditi (hi-IN)  |  TTS -> MP3 fallback  |  call recording proof in UI",    GREEN),
     ("DATA",      "NASA DONKI",
      "NOAA SWPC Kp 5-min  +  NASA CME/GST 15-min  +  local storm archive",  YELLOW),
     ("DEPLOY",    "Vercel + Railway",
@@ -547,7 +547,7 @@ steps = [
     ("T+5s",  "Kp = 9.0",   "EXTREME  G5  confirmed",           RED,    RBORDER),
     ("T+14s", "MAP RED",    "All 28 zones -> red",              RED,    RBORDER),
     ("T+17s", "ALERTS",     "28 DISCOMs  +  12,400 farmers",    ORANGE, RGBColor(0x66,0x33,0x00)),
-    ("T+20s", "CALL LIVE",  "Hindi rings on demo phone",         GREEN,  GBORDER),
+    ("T+20s", "CALL LIVE",  "Hindi rings  +  recording proof",    GREEN,  GBORDER),
 ]
 for i, (t, status, desc, col, bc) in enumerate(steps):
     y = 1.92 + i * 0.87
@@ -693,12 +693,12 @@ for j, (lbl, col) in enumerate([("GPS OK", GREEN), ("GRID OK", GREEN), ("AURORA 
 # Hindi notification box
 notif = rrect(s, phone_l + 0.2, phone_t + 3.3, phone_w - 0.38, 2.58, bg=RGBColor(0x02, 0x0e, 0x1a), bc=BORDER)
 tb(s, phone_l + 0.32, phone_t + 3.42, phone_w - 0.6, 2.35,
-   "KAVACH Suraksha Sandesh\n"
-   "Tanikh: Aaj\n"
-   "Aaj ka Score: 95 / 100\n"
-   "GPS: Sahi  |  Grid: Surakshit\n"
-   "Koi solar toofan nahi\n"
-   "KAVACH active hai.",
+   "KAVACH सुरक्षा संदेश\n"
+   "तारीख: आज\n"
+   "आज का स्कोर: 95 / 100\n"
+   "GPS: सामान्य  |  ग्रिड: सुरक्षित\n"
+   "कोई सौर तूफान नहीं\n"
+   "KAVACH सक्रिय है।",
    sz=12, col=GREEN, mono=True)
 
 # Score badge next to phone
@@ -872,6 +872,6 @@ accent_bar(s)
 
 
 # ── Save ──────────────────────────────────────────────────────────────
-out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL_v4.pptx"
+out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL_v5.pptx"
 prs.save(out)
 print(f"Saved: {len(prs.slides)} slides -> {out}")

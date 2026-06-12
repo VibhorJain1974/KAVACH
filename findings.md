@@ -227,3 +227,68 @@ git push -u origin main
 
 ### Final Status
 All 7 finalization steps complete. Codebase reads like a focused solo dev under deadline.
+
+---
+
+## Session 2 — Hardening + Demo Day Fixes (2026-06-13)
+
+### Phase 8 — 11 Bugs Fixed
+
+#### P8.1 + P8.2 — NOAA 0Z Kp Bug
+**Root cause:** NOAA emits `kp_index=0` and `estimated_kp=0` at the start of every 3-hour window (placeholder row before the actual reading arrives).  
+**Fix (backend):** `backend/agents/noaa_agent.py` — walks array backward to find last non-zero `estimated_kp`/`kp_index`.  
+**Fix (frontend):** `parseNoaaKp()` helper added to `Dashboard.tsx` — same backward walk used as fallback when NOAA returns 0.  
+**Result:** Live Kp now shows real value (e.g. 0.7) instead of 0.0.
+
+#### P8.3 — Backend Routing (App Crash)
+**Root cause:** `main.py` called `app.include_router()` only for `storms`, `alerts`, `demo`. The three new routers (`shield`, `aurora`, `memory`) were never registered — every request to those routes 404'd. The 404 on `/shield/score` propagated uncaught in React and crashed the entire frontend.  
+**Fix:** Added 3 `include_router` calls in `main.py`.  
+**Diagnosed via:** Playwright — navigated to `/dashboard`, captured console errors.
+
+#### P8.4 — Score Sync (Tab Badge [95] vs Gauge 100)
+**Root cause:** `resetDemo()` hardcoded `setShieldScore(95)` while `DailyShieldTab` fetched live `/shield/score` which returned 100.  
+**Fix:** Removed hardcoded value; `resetDemo()` now re-fetches `/shield/score` to get live value.
+
+#### P8.5 — Call Recording Proxy (Twilio Login Prompt)
+**Root cause:** `DemoPanel` loaded the Twilio recording URL directly in `<audio src>`. Browser issued a GET to `api.twilio.com/…/Recordings/SID.mp3`, got a 401, and showed a login dialog.  
+**Fix:** Backend `/demo/recording` now returns a proxy path (`/demo/recording-audio?sid=RE…`). New endpoint `/demo/recording-audio` authenticates server-side with Twilio HTTP Basic Auth and streams the MP3 to the browser.
+
+#### P8.6 — SSRF Prevention (SID Validation)
+**Finding:** The `sid` parameter was interpolated directly into the Twilio URL with no validation — an attacker could craft a path traversal or SSRF payload.  
+**Fix:** Regex `^RE[0-9a-fA-F]{32}$` validated before URL construction. Invalid SIDs return 400.
+
+#### P8.7 — Aurora Map Markers Not Showing
+**Root cause:** `IndiaMap` component had no aurora layer. Markers existed in the right-column list but were never drawn on the map.  
+**Fix:** Added `auroraMarkers` prop to `IndiaMap`; new Mapbox GeoJSON source `aurora-markers` with 3 layers: `aurora-glow` (blur circle), `aurora-dot` (solid dot), `aurora-label` (probability %). `buildAuroraGeoJSON()` helper builds the FeatureCollection. `Dashboard.tsx` fetches `/aurora/predictions?kp=…` and passes results down.
+
+#### P8.8 — Hindi Devanagari in Daily Shield
+**Root cause:** `daily_shield.py` was already fixed to output Devanagari in a previous session, but the old Railway deployment (missing router registrations) was masking the fix.  
+**Fix:** Unblocked by P8.3 (Railway re-deploy from `backend/` subdirectory). Briefing now returns proper Devanagari strings.
+
+#### P8.9 — Railway Deploy Fix
+**Root cause:** `railway up` was run from `E:\FARAWAY` (monorepo root). Nixpacks uploaded everything and could not find `main.py` at the root of the uploaded directory.  
+**Fix:** All Railway deploys must run from `E:\FARAWAY\backend`.
+
+#### P8.10 — Reset Button Live Values
+**Fix:** `resetDemo()` now re-fetches both `/storm/current` (for live Kp) and `/shield/score` (for live score) instead of hardcoding 0.0 / 95.
+
+#### P8.11 — Full E2E Demo Test
+**Tool:** Playwright MCP against `https://frontend-rust-xi-79.vercel.app`  
+**Results:**
+- Landing page ✅
+- Command tab ✅ (map loads, Kp 0.7, alert feed)
+- Aurora tab ✅ (markers shown on map with probability labels)
+- Daily Shield tab ✅ (100/100, Devanagari Hindi, [100] badge)
+- Memory tab ✅ (847 alerts across 4 storms)
+- Demo run ✅ (Kp→9.0, map goes red, all steps, ~22s)
+- Console errors: 0
+
+### Docs Updated
+- `README.md` — features table, API reference, Coming in Round 2 list
+- `task_plan.md` — Phase 8 section added, status "Phases 0-8 COMPLETE"
+- `docs/make_pptx.py` — Slide 9 Hindi→Devanagari, Slide 5/7 recording proof, output v5
+
+### Deployment Status (2026-06-13)
+- Frontend: https://frontend-rust-xi-79.vercel.app ✅ LIVE
+- Backend: https://powerful-respect-production-482e.up.railway.app ✅ LIVE (with all 6 routers)
+- All 4 tabs functional, 0 console errors, demo completes in ~22s

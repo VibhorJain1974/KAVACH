@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import storms, alerts, demo
+from routers import storms, alerts, demo, shield, aurora, memory
 from agents.donki_agent import poll_donki
 from agents.noaa_agent import fetch_current_kp
 
@@ -25,6 +25,9 @@ app.add_middleware(
 app.include_router(storms.router)
 app.include_router(alerts.router)
 app.include_router(demo.router)
+app.include_router(shield.router)
+app.include_router(aurora.router)
+app.include_router(memory.router)
 
 scheduler = AsyncIOScheduler()
 

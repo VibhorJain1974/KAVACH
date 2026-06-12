@@ -19,13 +19,21 @@ const RISK_OPACITY: Record<string, number> = {
   red: 0.5,
 };
 
+interface AuroraMarker {
+  name: string;
+  lat: number;
+  lng: number;
+  probability_pct: number;
+  predicted_visible: boolean;
+}
+
 interface TooltipState {
   x: number;
   y: number;
   zone: DiscomZone | null;
 }
 
-export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: string }) {
+export default function IndiaMap({ zones, auroraMarkers = [] }: { zones: DiscomZone[]; severity: string; auroraMarkers?: AuroraMarker[] }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
@@ -130,6 +138,58 @@ export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: str
           setTooltip(t => ({ ...t, zone: null }));
         });
 
+        // Aurora prediction markers source
+        map.addSource('aurora-markers', {
+          type: 'geojson',
+          data: buildAuroraGeoJSON([]),
+        });
+
+        // Glow ring
+        map.addLayer({
+          id: 'aurora-glow',
+          type: 'circle',
+          source: 'aurora-markers',
+          paint: {
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 3, 22, 6, 38],
+            'circle-color': ['get', 'color'],
+            'circle-opacity': ['get', 'glowOpacity'],
+            'circle-blur': 0.8,
+          },
+        });
+
+        // Solid dot
+        map.addLayer({
+          id: 'aurora-dot',
+          type: 'circle',
+          source: 'aurora-markers',
+          paint: {
+            'circle-radius': 5,
+            'circle-color': ['get', 'color'],
+            'circle-opacity': ['get', 'dotOpacity'],
+            'circle-stroke-width': 1.5,
+            'circle-stroke-color': ['get', 'color'],
+            'circle-stroke-opacity': 0.9,
+          },
+        });
+
+        // Probability label
+        map.addLayer({
+          id: 'aurora-label',
+          type: 'symbol',
+          source: 'aurora-markers',
+          layout: {
+            'text-field': ['get', 'label'],
+            'text-size': 9,
+            'text-offset': [0, 1.4],
+            'text-anchor': 'top',
+          },
+          paint: {
+            'text-color': ['get', 'color'],
+            'text-halo-color': 'rgba(0,0,0,0.8)',
+            'text-halo-width': 1,
+          },
+        });
+
         mapRef.current = map;
         setMapLoaded(true);
       });
@@ -142,10 +202,15 @@ export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: str
   useEffect(() => {
     if (!mapLoaded || !mapRef.current || zones.length === 0) return;
     const source = mapRef.current.getSource('discoms');
-    if (source) {
-      source.setData(buildGeoJSON(zones));
-    }
+    if (source) source.setData(buildGeoJSON(zones));
   }, [zones, mapLoaded]);
+
+  // Update aurora markers when prop changes
+  useEffect(() => {
+    if (!mapLoaded || !mapRef.current) return;
+    const source = mapRef.current.getSource('aurora-markers');
+    if (source) source.setData(buildAuroraGeoJSON(auroraMarkers));
+  }, [auroraMarkers, mapLoaded]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -241,6 +306,26 @@ export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: str
       )}
     </div>
   );
+}
+
+function buildAuroraGeoJSON(markers: AuroraMarker[]) {
+  return {
+    type: 'FeatureCollection' as const,
+    features: markers.map(m => {
+      const visible = m.predicted_visible;
+      const color = visible ? '#00ff88' : m.probability_pct > 0 ? '#4df0ff' : 'rgba(100,120,160,0.6)';
+      return {
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [m.lng, m.lat] },
+        properties: {
+          label: `${m.name}\n${m.probability_pct}%`,
+          color,
+          glowOpacity: visible ? 0.35 : m.probability_pct > 0 ? 0.15 : 0.05,
+          dotOpacity: visible ? 0.95 : m.probability_pct > 0 ? 0.55 : 0.2,
+        },
+      };
+    }),
+  };
 }
 
 function buildGeoJSON(zones: DiscomZone[]) {

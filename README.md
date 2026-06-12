@@ -71,8 +71,9 @@ graph LR
 |---------|-------------|
 | **Command Center** | Live India map · 28 DISCOM zones · Kp gauge · alert log |
 | **Demo Replay** | 9-step SSE stream replaying May 2024 storm (22.6s) |
-| **Aurora Predictor** | Kp-based Northern Lights visibility for 6 Indian locations |
-| **Daily Shield** | Space Weather Score 0–100 · Hindi+English morning briefing |
+| **Call Recording Proof** | Every demo call auto-recorded · audio player appears in UI after call ends |
+| **Aurora Predictor** | Kp-based Northern Lights visibility for 6 Indian locations · plotted on map |
+| **Daily Shield** | Space Weather Score 0–100 · Devanagari Hindi + English morning briefing |
 | **Storm Memory** | 4 historical storms · counterfactual KAVACH alerts since 2003 |
 | **Solar Header** | Three.js Sun+Earth+CME particle system · storm-reactive |
 
@@ -136,7 +137,9 @@ npm run dev
 | GET | `/storm/history?days=7` | Recent storm history from NASA DONKI |
 | GET | `/alerts/discoms` | All 28 DISCOMs with risk levels |
 | POST | `/demo/replay` | SSE stream — replay May 2024 storm |
-| POST | `/demo/trigger-call?phone=+91XXXXXXXXXX` | Fire Hindi Twilio call |
+| POST | `/demo/trigger-call?phones=+91XXXXXXXXXX` | Fire Hindi Twilio call (comma-sep for multiple) |
+| GET | `/demo/recording?call_sid=CAxxxx` | Check if recording ready, returns proxy URL |
+| GET | `/demo/recording-audio?sid=RExxxx` | Stream Twilio MP3 through backend (no browser auth) |
 | GET | `/aurora/predictions?kp=9.0` | Aurora visibility by location |
 | GET | `/shield/score` | Current Space Weather Score (0–100) |
 | GET | `/shield/daily-brief` | Full Hindi+English briefing |
@@ -236,8 +239,8 @@ KAVACH is India's answer. One system. 28 grid utilities. 300 million people. Hin
 - **Multi-language expansion** — Tamil, Telugu, Marathi, Bengali, Punjabi, Gujarati, Kannada by DISCOM zone
 - **ISRO VEDAS integration** — ionospheric scintillation data
 - **WhatsApp/SMS alerts** — beyond voice calls
+- **Two-Way Voice Reply** — farmer presses 1 to confirm, 2 for help — KAVACH escalates
 - **DISCOM dashboard portal** — operator-facing SaaS
-- **Predictive damage modeling** — transformer risk by zone
 
 See `docs/future_features.md` for the full roadmap.
 

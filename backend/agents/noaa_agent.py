@@ -18,14 +18,24 @@ async def fetch_current_kp() -> dict:
             data = r.json()
             if not data:
                 return {"kp": 0, "source": "NOAA", "status": "no_data"}
-            latest = data[-1]
-            # Handle both object format {time_tag, estimated_kp} and legacy array format
-            if isinstance(latest, dict):
-                kp = float(latest.get("estimated_kp") or latest.get("kp_index") or 0)
-                time = latest.get("time_tag", "")
+            # Walk backward to skip trailing 0Z placeholders (NOAA emits kp=0 at start of each new 3h window)
+            entry = None
+            for row in reversed(data):
+                if isinstance(row, dict):
+                    kp_val = float(row.get("estimated_kp") or row.get("kp_index") or 0)
+                else:
+                    kp_val = float(row[1]) if row[1] else 0
+                if kp_val > 0:
+                    entry = row
+                    break
+            if entry is None:
+                entry = data[-1]
+            if isinstance(entry, dict):
+                kp = float(entry.get("estimated_kp") or entry.get("kp_index") or 0)
+                time = entry.get("time_tag", "")
             else:
-                kp = float(latest[1]) if latest[1] else 0
-                time = latest[0]
+                kp = float(entry[1]) if entry[1] else 0
+                time = entry[0]
             return {"kp": kp, "time": time, "source": "NOAA", "status": "ok"}
     except Exception as e:
         logger.error(f"NOAA poll failed: {e}")

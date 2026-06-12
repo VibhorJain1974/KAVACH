@@ -1,6 +1,6 @@
 # KAVACH Task Plan
-**Status:** Phases 0-5 COMPLETE. Railway needs user auth. P6 (slides) pending.
-**Last updated:** 2026-06-08 by Claude Code (autonomous)
+**Status:** Phases 0-8 COMPLETE. All systems live. Submit before June 14 11:59 PM IST.
+**Last updated:** 2026-06-13 by Claude Code (autonomous)
 
 ---
 
@@ -67,6 +67,19 @@
 - [x] P7.9 docs/future_features.md: full roadmap for Delhi + Tokyo rounds
 - [x] P7.10 Twilio hardened: call_with_fallback() TTS→MP3 fallback + 30s retry
 
+## PHASE 8 — HARDENING + DEMO DAY FIXES — COMPLETE (2026-06-13)
+- [x] P8.1 NOAA 0Z Kp bug fix — backend noaa_agent.py walks back past 3-hour window placeholders
+- [x] P8.2 Frontend NOAA fallback fix — parseNoaaKp() in Dashboard.tsx same fix client-side
+- [x] P8.3 Backend routing fix — shield/aurora/memory routers were never registered in main.py
+- [x] P8.4 Score sync fix — tab badge [X] and gauge both now use same live /shield/score value
+- [x] P8.5 Call recording proxy — /demo/recording returns proxy URL, /demo/recording-audio streams MP3 with Twilio auth server-side (no browser login prompt)
+- [x] P8.6 SID input validation — RE[0-9a-fA-F]{32} regex before URL construction (SSRF fix)
+- [x] P8.7 Aurora map markers — IndiaMap gets auroraMarkers prop, 3 Mapbox layers (glow+dot+label)
+- [x] P8.8 Hindi Devanagari — daily_shield.py fix finally deployed to Railway (was blocked on deploy failure)
+- [x] P8.9 Railway deploy fix — was running `railway up` from repo root; fixed to run from backend/ subdirectory
+- [x] P8.10 Reset button fix — resetDemo() re-fetches live Kp+score instead of hardcoding 0/95
+- [x] P8.11 Full E2E demo test via Playwright — all 4 tabs + demo complete + 0 console errors confirmed
+
 ---
 
 ## BLOCKERS (see blockers.md)
@@ -89,3 +102,4 @@
 - 2026-06-08: Phase 5 (partial) - Vercel deployed, README, tests
 - 2026-06-08: Phase 6 (partial) - Presentation script written
 - 2026-06-10: Phase 7 - v2 features (Aurora/Shield/Memory), UI rebuild, Twilio hardened
+- 2026-06-13: Phase 8 - all bugs fixed, E2E demo tested, docs updated, SUBMISSION READY

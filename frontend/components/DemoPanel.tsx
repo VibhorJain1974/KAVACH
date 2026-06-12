@@ -44,7 +44,9 @@ export default function DemoPanel({
           const r = await fetch(`${backendUrl}/demo/recording?call_sid=${callSid}`);
           const data = await r.json();
           if (data.ready && data.url) {
-            setRecordingUrl(data.url);
+            // data.url is a relative proxy path — prefix with backend base so audio loads without Twilio auth
+            const audioUrl = data.url.startsWith('http') ? data.url : `${backendUrl}${data.url}`;
+            setRecordingUrl(audioUrl);
             setRecordingPolling(false);
             if (pollRef.current) clearInterval(pollRef.current);
           }

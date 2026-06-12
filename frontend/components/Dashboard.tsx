@@ -18,6 +18,16 @@ const SolarHeader = dynamic(() => import('./SolarHeader'), { ssr: false });
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
+// NOAA emits kp_index=0 at the start of each new 3-hour window ("0Z" placeholder).
+// Skip those trailing zeros to get the actual current Kp.
+function parseNoaaKp(arr: { kp_index: number; estimated_kp?: number }[]): number {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const kp = arr[i].estimated_kp ?? arr[i].kp_index;
+    if (kp > 0) return kp;
+  }
+  return arr[arr.length - 1]?.kp_index ?? 0;
+}
+
 type Tab = 'command' | 'aurora' | 'shield' | 'memory';
 
 const TAB_LABELS: Record<Tab, string> = {
@@ -39,6 +49,7 @@ export default function Dashboard() {
   const [callSid, setCallSid] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('command');
   const [shieldScore, setShieldScore] = useState<number | null>(null);
+  const [auroraMarkers, setAuroraMarkers] = useState<{ name: string; lat: number; lng: number; probability_pct: number; predicted_visible: boolean }[]>([]);
   const audioRef = useRef<AudioFallbackRef>(null);
 
   useEffect(() => {
@@ -54,8 +65,8 @@ export default function Dashboard() {
         // Backend offline — fetch Kp directly from NOAA
         fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json')
           .then(r => r.json())
-          .then((arr: {kp_index: number}[]) => {
-            if (arr?.length) setCurrentKp(arr[arr.length - 1].kp_index);
+          .then((arr: { kp_index: number; estimated_kp?: number }[]) => {
+            if (arr?.length) setCurrentKp(parseNoaaKp(arr));
           })
           .catch(() => {});
       });
@@ -65,6 +76,15 @@ export default function Dashboard() {
       .then(d => { if (typeof d.score === 'number') setShieldScore(d.score); })
       .catch(() => { setShieldScore(95); });
   }, []);
+
+  // Fetch aurora predictions whenever kp changes (used by map markers on Aurora tab)
+  useEffect(() => {
+    if (currentKp <= 0) return;
+    fetch(`${BACKEND}/aurora/predictions?kp=${currentKp}`)
+      .then(r => r.json())
+      .then(d => { if (d.predictions) setAuroraMarkers(d.predictions); })
+      .catch(() => {});
+  }, [currentKp]);
 
   const runDemo = useCallback(async () => {
     if (demoRunning) return;
@@ -132,15 +152,15 @@ export default function Dashboard() {
     setDemoStep(null);
     setCallStatus(null);
     setCallSid(null);
-    setShieldScore(95);
     setStatusMessage('KAVACH monitoring active — all clear');
-    // Re-fetch live Kp instead of resetting to 0
+    // Re-fetch live Kp and score instead of hardcoding
     fetch(`${BACKEND}/storm/current`).then(r => r.json()).then(d => { if (d.kp) setCurrentKp(d.kp); })
       .catch(() => {
         fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json')
-          .then(r => r.json()).then((arr: {kp_index: number}[]) => { if (arr?.length) setCurrentKp(arr[arr.length - 1].kp_index); })
+          .then(r => r.json()).then((arr: { kp_index: number; estimated_kp?: number }[]) => { if (arr?.length) setCurrentKp(parseNoaaKp(arr)); })
           .catch(() => {});
       });
+    fetch(`${BACKEND}/shield/score`).then(r => r.json()).then(d => { if (typeof d.score === 'number') setShieldScore(d.score); }).catch(() => {});
   }, []);
 
   const stormActive = severity === 'red';
@@ -213,8 +233,8 @@ export default function Dashboard() {
         {/* AURORA TAB */}
         {activeTab === 'aurora' && (
           <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 400px' }}>
-                <div className="relative overflow-hidden">
-              <IndiaMap zones={zones} severity={severity} />
+            <div className="relative overflow-hidden">
+              <IndiaMap zones={zones} severity={severity} auroraMarkers={auroraMarkers} />
             </div>
             <div style={{ borderLeft: '1px solid rgba(0,212,255,0.1)', overflowY: 'auto' }}>
               <AuroraTab kp={currentKp} backendUrl={BACKEND} />
