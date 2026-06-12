@@ -58,15 +58,31 @@ def recommended_actions(kp: float, cme_inbound: bool = False) -> list[str]:
     return ["No action required — nominal conditions"]
 
 
+_GPS_HINDI = {
+    "Normal": "सामान्य",
+    "Minor Degradation": "मामूली गिरावट",
+    "Moderate Degradation": "मध्यम गिरावट",
+    "Severely Degraded": "गंभीर रूप से खराब",
+}
+_GRID_HINDI = {
+    "Minimal": "न्यूनतम",
+    "Low": "कम",
+    "Elevated": "बढ़ा हुआ",
+    "High": "उच्च",
+}
+
+
 def hindi_briefing(score: int, kp: float, date_str: str, cme_inbound: bool = False) -> str:
-    gps = gps_status(kp)
-    grid = grid_risk_level(kp, cme_inbound)
+    gps = _GPS_HINDI.get(gps_status(kp), gps_status(kp))
+    grid = _GRID_HINDI.get(grid_risk_level(kp, cme_inbound), grid_risk_level(kp, cme_inbound))
+    cme_line = "CME चेतावनी: सक्रिय\n" if cme_inbound else ""
     return (
-        f"KAVACH Suraksha Sandesh - {date_str}\n"
-        f"Aaj ka Space Weather Score: {score}/100\n"
-        f"GPS Shuddhata: {gps}\n"
-        f"Grid Suraksha: {grid}\n"
-        f"Kisi bhi samasya ke liye: KAVACH active hai."
+        f"KAVACH सुरक्षा संदेश — {date_str}\n"
+        f"आज का स्पेस वेदर स्कोर: {score}/100\n"
+        f"GPS शुद्धता: {gps}\n"
+        f"ग्रिड सुरक्षा: {grid}\n"
+        f"{cme_line}"
+        f"किसी भी समस्या के लिए: KAVACH सक्रिय है।"
     )
 
 

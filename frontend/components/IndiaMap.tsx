@@ -53,6 +53,11 @@ export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: str
         attributionControl: false,
       });
 
+      // Fit tightly to India on load
+      map.on('style.load', () => {
+        map.fitBounds([[68.0, 7.5], [97.5, 37.0]], { padding: 32, maxZoom: 5.5, duration: 0 });
+      });
+
       map.on('load', () => {
         // Add DISCOM zone circles as a GeoJSON source
         map.addSource('discoms', {

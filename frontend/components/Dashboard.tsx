@@ -49,7 +49,15 @@ export default function Dashboard() {
     fetch(`${BACKEND}/storm/current`)
       .then(r => r.json())
       .then(d => { if (d.kp) setCurrentKp(d.kp); })
-      .catch(() => {});
+      .catch(() => {
+        // Backend offline — fetch Kp directly from NOAA
+        fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json')
+          .then(r => r.json())
+          .then((arr: {kp_index: number}[]) => {
+            if (arr?.length) setCurrentKp(arr[arr.length - 1].kp_index);
+          })
+          .catch(() => {});
+      });
 
     fetch(`${BACKEND}/shield/score`)
       .then(r => r.json())
