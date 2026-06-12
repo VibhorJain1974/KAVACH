@@ -4,6 +4,7 @@ import json
 import os
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
+from dotenv import dotenv_values
 from services.nasa import load_may2024_storm, parse_gst_events, classify_severity
 from services.discom_mapper import map_storm_to_discoms, get_all_discoms
 from services.twilio_caller import make_alert_call, call_multiple
@@ -12,7 +13,11 @@ from services.storm_memory import get_memory_totals
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
-DEMO_PHONE = os.getenv("DEMO_PHONE_NUMBER", "")  # comma-separated for multiple numbers
+
+def _get_demo_phones() -> list[str]:
+    # Re-read .env on every call so number changes take effect without restart
+    raw = dotenv_values().get("DEMO_PHONE_NUMBER") or os.getenv("DEMO_PHONE_NUMBER", "")
+    return [p.strip() for p in raw.split(",") if p.strip()]
 
 
 async def _replay_generator(phones: list[str] = None, speed: float = 1.0):
@@ -73,8 +78,7 @@ async def _replay_generator(phones: list[str] = None, speed: float = 1.0):
     await delay(3)
 
     # Step 6: Twilio calls — fire all numbers simultaneously
-    env_phones = [p.strip() for p in DEMO_PHONE.split(",") if p.strip()]
-    targets = phones or env_phones
+    targets = phones or _get_demo_phones()
     if targets:
         masked = ", ".join("*" * 6 + n[-4:] for n in targets)
         yield event({"step": 6, "status": "calling", "message": f"Placing Hindi voice alert to {len(targets)} number(s): {masked}..."})
@@ -190,8 +194,7 @@ async def trigger_demo_call(phones: str = None):
     """Fire Twilio calls to one or more numbers simultaneously.
     phones: comma-separated e.g. +919999999999,+918888888888
     """
-    env_phones = [p.strip() for p in DEMO_PHONE.split(",") if p.strip()]
-    targets = [p.strip() for p in phones.split(",") if p.strip()] if phones else env_phones
+    targets = [p.strip() for p in phones.split(",") if p.strip()] if phones else _get_demo_phones()
     if not targets:
         return {"error": "No phone number — pass ?phones=+91XXX,+91YYY or set DEMO_PHONE_NUMBER"}
     loop = asyncio.get_event_loop()
