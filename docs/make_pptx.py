@@ -421,7 +421,7 @@ rows = [
     ("DATABASE",  "Supabase",
      "PostgreSQL  +  realtime  |  28 DISCOMs  +  alert log  +  v2 tables",  GREEN),
     ("VOICE",     "Twilio + Polly",
-     "Amazon Polly Aditi (hi-IN)  |  TTS -> MP3 fallback  |  30s retry",    GREEN),
+     "Amazon Polly Aditi (hi-IN)  |  TTS -> MP3 fallback  |  multi-number parallel calls",    GREEN),
     ("DATA",      "NASA DONKI",
      "NOAA SWPC Kp 5-min  +  NASA CME/GST 15-min  +  local storm archive",  YELLOW),
     ("DEPLOY",    "Vercel + Railway",
@@ -872,6 +872,6 @@ accent_bar(s)
 
 
 # ── Save ──────────────────────────────────────────────────────────────
-out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL.pptx"
+out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL_v3.pptx"
 prs.save(out)
 print(f"Saved: {len(prs.slides)} slides -> {out}")
