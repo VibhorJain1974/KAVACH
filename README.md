@@ -8,7 +8,7 @@
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=flat-square&logo=vercel)](https://vercel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-**FAR AWAY 2026 Hackathon** · Space & Aerospace · Built by Vibbhor Jain + Claude Code
+**FAR AWAY 2026 Hackathon** · Space & Aerospace · Team 404_SHINOBI
 
 ---
 
@@ -207,11 +207,9 @@ See `docs/future_features.md` for the full roadmap.
 
 ---
 
-## Built With
+## Team
 
-This project was built autonomously by **Vibbhor Jain** (solo) with **Claude Code** as AI development partner. The entire build — from idea to live deployment — took 6 days.
-
-The Claude Code commit log is itself a demonstration of the Agentic & Autonomous Systems theme.
+Built by **Team 404_SHINOBI** for FAR AWAY 2026. Concept to live deployment in 6 days.
 
 ---
 
@@ -221,4 +219,4 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-*FAR AWAY 2026 · Submission deadline: June 14, 2026 · Team: Vibbhor Jain*
+*FAR AWAY 2026 · Submission deadline: June 14, 2026 · Team 404_SHINOBI*
