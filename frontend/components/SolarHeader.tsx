@@ -24,7 +24,7 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
     let particles: import('three').Points;
     let particlePositions: Float32Array;
     let particleVelocities: Float32Array;
-    const PARTICLE_COUNT = 800;
+    const PARTICLE_COUNT = 1200;
 
     async function init() {
       THREE = await import('three');
@@ -35,61 +35,88 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
       renderer.setClearColor(0x000000, 0);
 
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(50, canvas!.offsetWidth / canvas!.offsetHeight, 0.1, 1000);
-      camera.position.set(0, 0, 8);
 
-      // Sun
-      const sunGeo = new THREE.SphereGeometry(1.2, 32, 32);
-      const sunMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+      // Wider FOV + camera farther back → objects are smaller, ambient, not competing
+      camera = new THREE.PerspectiveCamera(75, canvas!.offsetWidth / canvas!.offsetHeight, 0.1, 1000);
+      camera.position.set(0.5, 0, 12);
+
+      // ── Sun — pushed to upper-left corner ────────────────────────
+      const sunGeo = new THREE.SphereGeometry(0.9, 32, 32);
+      // White-hot core reads as stellar, not cartoon orange
+      const sunMat = new THREE.MeshBasicMaterial({ color: 0xfffaee });
       sun = new THREE.Mesh(sunGeo, sunMat);
-      sun.position.set(-5, 0, 0);
+      sun.position.set(-7, 1.0, 0);
       scene.add(sun);
 
-      // Sun corona glow (additive blending ring)
-      const coronaGeo = new THREE.SphereGeometry(1.6, 32, 32);
-      const coronaMat = new THREE.MeshBasicMaterial({
-        color: 0xff6600,
-        transparent: true,
-        opacity: 0.15,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      });
-      sun.add(new THREE.Mesh(coronaGeo, coronaMat));
+      // 4-layer corona: tight bright → wide dim, additive blending
+      const coronaLayers = [
+        { r: 1.15, opacity: 0.42, color: 0xffee44 },
+        { r: 1.55, opacity: 0.20, color: 0xff9900 },
+        { r: 2.10, opacity: 0.09, color: 0xff5500 },
+        { r: 3.20, opacity: 0.03, color: 0xff1100 },
+      ];
+      for (const layer of coronaLayers) {
+        const geo = new THREE.SphereGeometry(layer.r, 32, 32);
+        const mat = new THREE.MeshBasicMaterial({
+          color: layer.color,
+          transparent: true,
+          opacity: layer.opacity,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        sun.add(new THREE.Mesh(geo, mat));
+      }
 
-      // Earth
-      const earthGeo = new THREE.SphereGeometry(0.5, 32, 32);
-      const earthMat = new THREE.MeshBasicMaterial({ color: 0x1a4a8a });
+      // ── Earth — lower-right corner ────────────────────────────────
+      const earthGeo = new THREE.SphereGeometry(0.4, 32, 32);
+      const earthMat = new THREE.MeshBasicMaterial({ color: 0x2266cc });
       earth = new THREE.Mesh(earthGeo, earthMat);
-      earth.position.set(5, 0, 0);
+      earth.position.set(6.5, -0.8, 0);
       scene.add(earth);
 
-      // Earth atmosphere
-      const atmosGeo = new THREE.SphereGeometry(0.6, 32, 32);
+      // Atmosphere glow
+      const atmosGeo = new THREE.SphereGeometry(0.58, 32, 32);
       const atmosMat = new THREE.MeshBasicMaterial({
-        color: 0x0066ff,
+        color: 0x44aaff,
         transparent: true,
-        opacity: 0.12,
+        opacity: 0.28,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
       earth.add(new THREE.Mesh(atmosGeo, atmosMat));
 
-      // CME particle stream (Sun → Earth)
+      // ── Starfield ─────────────────────────────────────────────────
+      const starCount = 1200;
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        starPositions[i * 3]     = (Math.random() - 0.5) * 42;
+        starPositions[i * 3 + 1] = (Math.random() - 0.5) * 9;
+        starPositions[i * 3 + 2] = (Math.random() - 0.5) * 10 - 6;
+      }
+      const starGeo = new THREE.BufferGeometry();
+      starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      const starMat = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.028,
+        transparent: true,
+        opacity: 0.65,
+        sizeAttenuation: true,
+      });
+      scene.add(new THREE.Points(starGeo, starMat));
+
+      // ── CME Particle stream ───────────────────────────────────────
       particlePositions = new Float32Array(PARTICLE_COUNT * 3);
       particleVelocities = new Float32Array(PARTICLE_COUNT);
-
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        resetParticle(i);
-      }
+      for (let i = 0; i < PARTICLE_COUNT; i++) resetParticle(i);
 
       const pGeo = new THREE.BufferGeometry();
       pGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
 
       const pMat = new THREE.PointsMaterial({
         color: stormActive ? 0xff4444 : 0x00d4ff,
-        size: 0.04,
+        size: 0.05,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.75,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -99,57 +126,53 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
     }
 
     function resetParticle(i: number) {
-      // Start near sun with small y/z spread
-      particlePositions[i * 3] = -5 + (Math.random() - 0.5) * 0.4;
-      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 0.3;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
-      // Speed ramps with Kp
-      const baseSpeed = 0.008 + (kp / 9) * 0.025;
-      particleVelocities[i] = baseSpeed * (0.7 + Math.random() * 0.6);
+      // Spawn near sun, slight spread
+      particlePositions[i * 3]     = -7 + (Math.random() - 0.5) * 0.7;
+      particlePositions[i * 3 + 1] = 1.0 + (Math.random() - 0.5) * 0.9;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
+      const baseSpeed = 0.009 + (kp / 9) * 0.026;
+      particleVelocities[i] = baseSpeed * (0.6 + Math.random() * 0.8);
     }
 
     function animate() {
       animRef.current = requestAnimationFrame(animate);
 
-      sun.rotation.y += 0.003;
-      earth.rotation.y += 0.005;
+      sun.rotation.y += 0.002;
+      earth.rotation.y += 0.004;
 
       const pGeo = particles.geometry;
       const positions = pGeo.attributes.position.array as Float32Array;
       const pMat = particles.material as import('three').PointsMaterial;
 
-      // Storm color
       pMat.color.set(stormActive ? 0xff4444 : 0x00d4ff);
-      pMat.opacity = stormActive ? 0.9 : 0.7;
+      pMat.opacity = stormActive ? 0.95 : 0.75;
 
-      // Sun corona pulse during storm
-      const coronaMesh = sun.children[0] as import('three').Mesh;
+      // Storm: pulse first corona layer
       if (stormActive) {
-        const t = Date.now() * 0.002;
-        (coronaMesh.material as import('three').MeshBasicMaterial).opacity = 0.15 + Math.sin(t) * 0.12;
+        const pulse = 1 + Math.sin(Date.now() * 0.002) * 0.05;
+        const corona0 = sun.children[0] as import('three').Mesh;
+        corona0.scale.setScalar(pulse);
+        (corona0.material as import('three').MeshBasicMaterial).opacity = 0.42 + Math.sin(Date.now() * 0.003) * 0.15;
       }
 
-      // Earth glow during storm
+      // Earth atmosphere color reacts to storm
       const atmosMesh = earth.children[0] as import('three').Mesh;
+      const atmosMat = atmosMesh.material as import('three').MeshBasicMaterial;
       if (stormActive) {
-        (atmosMesh.material as import('three').MeshBasicMaterial).color.set(0xff2200);
-        (atmosMesh.material as import('three').MeshBasicMaterial).opacity = 0.3;
+        atmosMat.color.set(0xff3300);
+        atmosMat.opacity = 0.40;
       } else {
-        (atmosMesh.material as import('three').MeshBasicMaterial).color.set(0x0066ff);
-        (atmosMesh.material as import('three').MeshBasicMaterial).opacity = 0.12;
+        atmosMat.color.set(0x44aaff);
+        atmosMat.opacity = 0.28;
       }
 
-      // Move particles
+      // Move particles Sun → Earth, converging on Earth's y position
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         positions[i * 3] += particleVelocities[i];
-        // Slight drift toward Earth position
-        positions[i * 3 + 1] *= 0.998;
-        positions[i * 3 + 2] *= 0.998;
-
-        // Reset when past Earth
-        if (positions[i * 3] > 5.5) {
-          resetParticle(i);
-        }
+        // Drift y toward Earth center (-0.8)
+        positions[i * 3 + 1] += (-0.8 - positions[i * 3 + 1]) * 0.0012;
+        positions[i * 3 + 2] *= 0.999;
+        if (positions[i * 3] > 7.2) resetParticle(i);
       }
       pGeo.attributes.position.needsUpdate = true;
 
@@ -165,7 +188,6 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
       camera.updateProjectionMatrix();
     };
     window.addEventListener('resize', onResize);
-
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', onResize);
@@ -174,50 +196,72 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update particle color/speed without remounting
-  useEffect(() => {
-    // The animate loop reads stormActive/kp from closure on next frame
-    // We don't need to re-init; the particle reset uses kp from outer scope
-  }, [stormActive, kp]);
+  useEffect(() => {}, [stormActive, kp]);
 
   return (
     <div style={{
       position: 'relative',
       width: '100%',
-      height: 200,
+      height: 220,
       overflow: 'hidden',
-      background: 'linear-gradient(180deg, #04040f 0%, #0a0a1a 100%)',
-      borderBottom: '1px solid rgba(0,212,255,0.1)',
+      // Warm amber bleeds in from sun-side (left), deep space in center, cold blue for earth (right)
+      background: 'radial-gradient(ellipse at 8% 55%, #1c0900 0%, #040810 52%, #020510 100%)',
+      borderTop: '2px solid rgba(0,212,255,0.38)',
+      borderBottom: '1px solid rgba(0,212,255,0.16)',
     }}>
+
+      {/* Subtle mission-control grid */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage:
+          'linear-gradient(rgba(0,212,255,0.022) 1px, transparent 1px),' +
+          'linear-gradient(90deg, rgba(0,212,255,0.022) 1px, transparent 1px)',
+        backgroundSize: '80px 80px',
+      }} />
+
+      {/* Three.js canvas — fills the whole header */}
       <canvas
         ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block' }}
       />
 
-      {/* Overlay: KAVACH brand + storm status — centered in right 60% to avoid Sun sphere */}
+      {/* Center overlay — KAVACH owns the middle, solar system is backdrop */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: 4,
-        paddingLeft: '30%',
+        flexDirection: 'column', gap: 10,
       }}>
         <div style={{
-          fontFamily: 'Space Grotesk, sans-serif',
-          fontSize: 28,
-          fontWeight: 700,
-          letterSpacing: '0.25em',
-          color: '#00d4ff',
-          textShadow: '0 0 24px rgba(0,212,255,0.6), 0 0 60px rgba(0,212,255,0.2)',
+          fontFamily: '"Space Grotesk", "Syne", sans-serif',
+          fontSize: 54,
+          fontWeight: 800,
+          letterSpacing: '0.32em',
+          color: '#ffffff',
+          textShadow:
+            '0 0 28px rgba(0,212,255,0.95),' +
+            '0 0 72px rgba(0,212,255,0.32),' +
+            '0 2px 6px rgba(0,0,0,0.9)',
+          lineHeight: 1,
+          userSelect: 'none',
         }}>
           KAVACH
         </div>
+
+        {/* Separator */}
         <div style={{
-          fontSize: 9,
-          letterSpacing: '0.3em',
-          color: stormActive ? '#ff4444' : 'rgba(224,224,255,0.4)',
-          fontFamily: 'DM Mono, monospace',
+          width: 200,
+          height: 1,
+          background: 'linear-gradient(90deg, transparent, rgba(0,212,255,0.55), transparent)',
+        }} />
+
+        <div style={{
+          fontSize: 11,
+          letterSpacing: '0.26em',
+          color: stormActive ? '#ff7755' : 'rgba(200,218,255,0.68)',
+          fontFamily: '"DM Mono", "Courier New", monospace',
           transition: 'color 0.5s',
-          textShadow: stormActive ? '0 0 12px rgba(255,68,68,0.5)' : 'none',
+          textShadow: stormActive ? '0 0 18px rgba(255,80,40,0.85)' : 'none',
+          userSelect: 'none',
         }}>
           {stormActive
             ? `SOLAR STORM ACTIVE — Kp ${kp.toFixed(1)} — INDIA GRID AT RISK`
@@ -225,20 +269,28 @@ export default function SolarHeader({ stormActive, kp }: SolarHeaderProps) {
         </div>
       </div>
 
-      {/* Left: SUN label */}
+      {/* Bottom-left: SOL data tag */}
       <div style={{
-        position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 8, letterSpacing: '0.2em', color: 'rgba(255,170,0,0.5)',
-        fontFamily: 'DM Mono, monospace',
-      }}>SUN</div>
+        position: 'absolute', left: 18, bottom: 12,
+        fontFamily: '"DM Mono", monospace',
+        pointerEvents: 'none',
+        display: 'flex', flexDirection: 'column', gap: 3,
+      }}>
+        <span style={{ fontSize: 8, letterSpacing: '0.22em', color: 'rgba(255,175,0,0.75)' }}>SOL</span>
+        <span style={{ fontSize: 7, letterSpacing: '0.14em', color: 'rgba(255,110,0,0.42)' }}>G-CLASS STAR</span>
+      </div>
 
-      {/* Right: EARTH label */}
+      {/* Bottom-right: EARTH data tag */}
       <div style={{
-        position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 8, letterSpacing: '0.2em', color: 'rgba(0,212,255,0.5)',
-        fontFamily: 'DM Mono, monospace',
+        position: 'absolute', right: 18, bottom: 12,
+        fontFamily: '"DM Mono", monospace',
         textAlign: 'right',
-      }}>EARTH<br/><span style={{ color: 'rgba(0,255,136,0.5)' }}>INDIA</span></div>
+        pointerEvents: 'none',
+        display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end',
+      }}>
+        <span style={{ fontSize: 8, letterSpacing: '0.22em', color: 'rgba(0,212,255,0.75)' }}>EARTH / INDIA</span>
+        <span style={{ fontSize: 7, letterSpacing: '0.14em', color: 'rgba(0,255,136,0.48)' }}>1.496 × 10⁸ KM</span>
+      </div>
     </div>
   );
 }

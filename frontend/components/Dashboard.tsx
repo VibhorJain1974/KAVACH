@@ -195,7 +195,7 @@ export default function Dashboard() {
         {activeTab === 'aurora' && (
           <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 400px' }}>
                 <div className="relative overflow-hidden">
-              <IndiaMap zones={zones} severity={severity} auroraMode kp={currentKp} />
+              <IndiaMap zones={zones} severity={severity} />
             </div>
             <div style={{ borderLeft: '1px solid rgba(0,212,255,0.1)', overflowY: 'auto' }}>
               <AuroraTab kp={currentKp} backendUrl={BACKEND} />

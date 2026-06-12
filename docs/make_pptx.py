@@ -439,17 +439,17 @@ for i, (layer, ver, detail, col) in enumerate(rows):
     detail_r = rrect(s, 4.32, y, 8.6, 0.76, bg=CARD, bc=BORDER)
     tb(s, 4.46, y + 0.18, 8.34, 0.42, detail, sz=12, col=WHITE, mono=True)
 
-# Bottom row of proof stats
+# Bottom proof badges — inline only, no stat_card (avoids sz=38 overflow)
 for i, (val, lbl, col) in enumerate([
-    ("Live",   "Vercel deploy",   GREEN),
-    ("Live",   "Railway backend", GREEN),
-    ("Live",   "Twilio tested",   GREEN),
-    ("6 days", "Concept to ship", ACCENT),
+    ("LIVE",   "Vercel deploy",    GREEN),
+    ("LIVE",   "Railway backend",  GREEN),
+    ("LIVE",   "Twilio tested",    GREEN),
+    ("6 DAYS", "Concept to ship",  ACCENT),
 ]):
     x = 0.45 + i * 3.22
-    stat_card(s, x, 7.0, 3.0, 0.38, val + "  " + lbl, "", col)
-    tb(s, x + 0.1, 7.02, 2.8, 0.3,
-       val + "  " + lbl, sz=11, bold=True, col=col, mono=True, align=PP_ALIGN.CENTER)
+    rrect(s, x, 6.94, 3.0, 0.44, bg=CARD3, bc=GBORDER if col == GREEN else ABORDER)
+    tb(s, x + 0.14, 7.04, 0.85, 0.26, val, sz=10, bold=True, col=col, mono=True)
+    tb(s, x + 1.06, 7.04, 1.88, 0.26, lbl, sz=10, col=MUTED)
 
 accent_bar(s)
 
@@ -572,16 +572,16 @@ tb(s, 7.22, 5.52, 5.85, 0.32,
    "India map: all 28 DISCOMs in RED  |  Alerts firing in parallel",
    sz=9, col=RED, mono=True, italic=True)
 
-# Stats below timeline
+# Stats below timeline — simple badges, no stat_card
 for j, (val, lbl, col) in enumerate([
-    ("22.6s", "demo runtime",    YELLOW),
-    ("4.5h",  "warning window",  ACCENT),
-    ("LIVE",  "Vercel + Railway", GREEN),
+    ("22.6s", "demo runtime",     YELLOW),
+    ("4.5h",  "warning window",   ACCENT),
+    ("LIVE",  "Vercel + Railway",  GREEN),
 ]):
     x = 0.45 + j * 2.3
-    stat_card(s, x, 7.02, 2.15, 0.38, val + "  " + lbl, "", col)
-    tb(s, x + 0.08, 7.05, 2.05, 0.3,
-       val + "  " + lbl, sz=10, bold=True, col=col, mono=True, align=PP_ALIGN.CENTER)
+    rrect(s, x, 7.0, 2.15, 0.42, bg=CARD2, bc=BORDER)
+    tb(s, x + 0.12, 7.08, 0.82, 0.26, val, sz=11, bold=True, col=col, mono=True)
+    tb(s, x + 0.98, 7.08, 1.1, 0.26, lbl, sz=9, col=MUTED)
 
 accent_bar(s, col=RED)
 
