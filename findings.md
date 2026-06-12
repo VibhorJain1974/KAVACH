@@ -1,5 +1,39 @@
 # KAVACH — Technical Findings & API Confirmations
-**Updated by:** Claude Code (autonomous) — 2026-06-12 (FINALIZATION)
+**Updated by:** Claude Code (autonomous) — 2026-06-12 (FRONTEND REBUILD)
+
+---
+
+## Frontend Rebuild — 2026-06-12
+
+### What was built
+- **Landing page** (`/`) — `LandingPage.tsx` — hero, CSS star field, count-up stats (28 DISCOMs / 12,400 farmers / 0 triggers), timeline how-it-works, 4-feature grid, demo banner, CTA to `/dashboard`
+- **Dashboard route** — moved to `/dashboard` — existing Dashboard.tsx unchanged
+- **Demo progress bar** — DemoPanel.tsx now has real-time elapsed T+Ns bar synced to steps, tick marks, smooth gradient
+- **CALL LIVE pulse** — step 6 shows animated phone ring icon + yellow alert box
+- **Font** — Space Grotesk via next/font/google (400–700), replaces Syne everywhere
+- **phone-ring keyframe** — added to globals.css
+
+### Build output
+- `/` — 14.7 kB first load
+- `/dashboard` — 12.3 kB first load
+- `npm run build` passes clean (1 pre-existing warning in Dashboard.tsx, not a blocker)
+
+### Design system applied (ui-ux-pro-max)
+- Pattern: Real-Time/Operations Landing
+- Style: Dark Mode OLED
+- Typography: Space Grotesk (headings) + DM Mono (data/code)
+- Colors: existing CSS vars — --plasma, --aurora-green, --aurora-red, --solar
+- Spacing: 8px grid throughout, clamp() for responsive type
+
+### Security — no keys in new components
+- LandingPage.tsx: no tokens, no API keys, no hardcoded secrets
+- GitHub hardlink points to public repo URL only
+
+### Deployed
+- Pushed to main → Vercel auto-deploys from main branch
+- URL: https://frontend-rust-xi-79.vercel.app
+
+---
 
 ---
 
@@ -130,11 +164,17 @@ Step 7: Summary (28 zones, 12,400 farmers, 0 human triggers)
 - Backend: https://powerful-respect-production-482e.up.railway.app (Railway)
 
 ## User Actions Required Before June 14
-1. Railway login: https://railway.com/activate - run `railway login` in terminal
+1. Railway login: already linked via `railway link` — run `powershell -File sync_railway.ps1` to push env vars
 2. Supabase migration: paste backend/supabase_migration.sql in SQL Editor (includes v2 tables)
-3. Fire a test Twilio call: POST /demo/trigger-call?phone=+91XXXXXXXXXX
+3. Fire a test Twilio call: POST /demo/trigger-call?phones=+91XXXXXXXXXX,+91YYYYYYYYYY
 4. Practice demo 5 times — confirm the 22.6s sequence end-to-end
 5. Submit to Unstop before June 14 11:59 PM IST
+
+## Changing Phone Numbers (Railway)
+- Edit DEMO_PHONE_NUMBER in .env (comma-separated for multiple)
+- Run: `powershell -File sync_railway.ps1 -PhoneOnly`
+- Railway restarts in ~10 seconds — no manual action needed
+- Local backend re-reads .env on every call — no restart ever needed
 
 ## Key Demo Numbers (to have memorized)
 - "28 DISCOMs warned, 12,400 farmers called, 0 human triggers"

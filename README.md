@@ -158,7 +158,7 @@ NOAA_KP_URL=https://services.swpc.noaa.gov/json/planetary_k_index_1m.json
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
-DEMO_PHONE_NUMBER=+91XXXXXXXXXX
+DEMO_PHONE_NUMBER=+91XXXXXXXXXX,+91YYYYYYYYYY   # comma-separated for multiple simultaneous calls
 
 # Supabase
 SUPABASE_URL=https://your-project.supabase.co
@@ -170,6 +170,42 @@ KAVACH_AUDIO_URL=https://your-frontend.vercel.app/hindi_alert.mp3
 # Frontend .env.local
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
+```
+
+---
+
+## Changing Demo Phone Numbers
+
+KAVACH can call **multiple phones simultaneously** during the demo. Phone numbers live in `.env` as a comma-separated list:
+
+```env
+DEMO_PHONE_NUMBER=+919999999999,+918888888888,+917777777777
+```
+
+### Local backend (running `python main.py`)
+
+The backend re-reads `.env` on **every call** — no restart needed. Just edit `.env` and fire the next demo.
+
+### Railway backend (deployed)
+
+Railway does not read your local `.env`. Use the sync script whenever you change numbers:
+
+```powershell
+# Sync only the phone number (fast, ~5 seconds)
+powershell -File sync_railway.ps1 -PhoneOnly
+
+# Sync all env vars (Twilio, NASA key, etc.)
+powershell -File sync_railway.ps1
+```
+
+Railway auto-restarts after each sync. New numbers are live in ~10 seconds.
+
+> **One-time setup:** run `railway link` once to connect the CLI to your project, then the script works from anywhere.
+
+### Fire a call manually (no demo needed)
+
+```
+POST /demo/trigger-call?phones=+91XXXXXXXXXX,+91YYYYYYYYYY
 ```
 
 ---
