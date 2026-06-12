@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from twilio.rest import Client
 from dotenv import load_dotenv
 
@@ -95,6 +96,22 @@ def call_with_fallback(to_number: str, kp: float = 9.0, _retry: bool = True) -> 
 def make_alert_call(to_number: str, kp_index: float = 9.0) -> dict:
     """Public API — backward compatible. Delegates to call_with_fallback()."""
     return call_with_fallback(to_number, kp_index)
+
+
+def call_multiple(numbers: list[str], kp: float = 9.0) -> list[dict]:
+    """Fire calls to all numbers simultaneously. Returns results in order received."""
+    if not numbers:
+        return []
+    with ThreadPoolExecutor(max_workers=len(numbers)) as pool:
+        futures = {pool.submit(call_with_fallback, n, kp): n for n in numbers}
+        results = {}
+        for future in as_completed(futures):
+            n = futures[future]
+            try:
+                results[n] = future.result()
+            except Exception as e:
+                results[n] = {"call_sid": None, "status": "failed", "method": "NONE", "to": n, "error": str(e)}
+    return [results[n] for n in numbers]
 
 
 def get_call_status(call_sid: str) -> dict:

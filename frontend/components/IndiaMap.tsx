@@ -46,10 +46,10 @@ export default function IndiaMap({ zones }: { zones: DiscomZone[]; severity: str
       map = new mapboxgl.Map({
         container: mapContainer.current!,
         style: 'mapbox://styles/mapbox/dark-v11',
-        center: [82.8, 22.5],
-        zoom: 4.2,
-        minZoom: 3,
-        maxZoom: 8,
+        center: [80.5, 22.5],
+        zoom: 4.8,
+        minZoom: 3.5,
+        maxZoom: 10,
         attributionControl: false,
       });
 

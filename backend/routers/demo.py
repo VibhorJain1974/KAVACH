@@ -6,16 +6,16 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from services.nasa import load_may2024_storm, parse_gst_events, classify_severity
 from services.discom_mapper import map_storm_to_discoms, get_all_discoms
-from services.twilio_caller import make_alert_call
+from services.twilio_caller import make_alert_call, call_multiple
 from services.aurora_predictor import get_active_aurora_locations
 from services.storm_memory import get_memory_totals
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
-DEMO_PHONE = os.getenv("DEMO_PHONE_NUMBER", "")
+DEMO_PHONE = os.getenv("DEMO_PHONE_NUMBER", "")  # comma-separated for multiple numbers
 
 
-async def _replay_generator(phone: str = None, speed: float = 1.0):
+async def _replay_generator(phones: list[str] = None, speed: float = 1.0):
     delay = lambda s: asyncio.sleep(s / speed)
 
     def event(data: dict) -> str:
@@ -72,24 +72,22 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
     })
     await delay(3)
 
-    # Step 6: Twilio call
-    call_result = None
-    target = phone or DEMO_PHONE
-    if target:
-        masked = "*" * 6 + target[-4:]
-        yield event({"step": 6, "status": "calling", "message": f"Placing Hindi voice alert to {masked}..."})
+    # Step 6: Twilio calls — fire all numbers simultaneously
+    env_phones = [p.strip() for p in DEMO_PHONE.split(",") if p.strip()]
+    targets = phones or env_phones
+    if targets:
+        masked = ", ".join("*" * 6 + n[-4:] for n in targets)
+        yield event({"step": 6, "status": "calling", "message": f"Placing Hindi voice alert to {len(targets)} number(s): {masked}..."})
         await delay(1)
-        try:
-            call_result = make_alert_call(target, storm["max_kp"])
-            yield event({
-                "step": 6,
-                "status": "call_placed",
-                "message": "Hindi alert call placed — phone ringing now",
-                "call_sid": call_result.get("call_sid"),
-                "call_status": call_result.get("status"),
-            })
-        except Exception as e:
-            yield event({"step": 6, "status": "call_failed", "message": f"Call failed: {e}. Playing local fallback audio.", "fallback": True})
+        loop = asyncio.get_event_loop()
+        call_results = await loop.run_in_executor(None, call_multiple, targets, storm["max_kp"])
+        placed = [r for r in call_results if r.get("call_sid")]
+        yield event({
+            "step": 6,
+            "status": "call_placed",
+            "message": f"Hindi alert calls placed — {len(placed)}/{len(targets)} phones ringing now",
+            "calls": call_results,
+        })
     else:
         yield event({"step": 6, "status": "no_phone", "message": "No demo phone set — skipping call (set DEMO_PHONE_NUMBER)"})
 
@@ -175,23 +173,27 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
 
 
 @router.post("/replay")
-async def replay_storm(phone: str = None, speed: float = 1.0):
-    """Stream SSE events replaying the May 2024 extreme storm."""
+async def replay_storm(phones: str = None, speed: float = 1.0):
+    """Stream SSE events replaying the May 2024 extreme storm.
+    phones: comma-separated list e.g. +919999999999,+918888888888
+    """
+    phone_list = [p.strip() for p in phones.split(",") if p.strip()] if phones else None
     return StreamingResponse(
-        _replay_generator(phone, speed),
+        _replay_generator(phone_list, speed),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 
 @router.post("/trigger-call")
-async def trigger_demo_call(phone: str = None):
-    """Fire just the Twilio call — useful for testing."""
-    target = phone or DEMO_PHONE
-    if not target:
-        return {"error": "No phone number — pass ?phone=+91XXXXXXXXXX or set DEMO_PHONE_NUMBER"}
-    try:
-        result = make_alert_call(target, 9.0)
-        return {"success": True, **result}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+async def trigger_demo_call(phones: str = None):
+    """Fire Twilio calls to one or more numbers simultaneously.
+    phones: comma-separated e.g. +919999999999,+918888888888
+    """
+    env_phones = [p.strip() for p in DEMO_PHONE.split(",") if p.strip()]
+    targets = [p.strip() for p in phones.split(",") if p.strip()] if phones else env_phones
+    if not targets:
+        return {"error": "No phone number — pass ?phones=+91XXX,+91YYY or set DEMO_PHONE_NUMBER"}
+    loop = asyncio.get_event_loop()
+    results = await loop.run_in_executor(None, call_multiple, targets, 9.0)
+    return {"success": True, "calls": results, "total": len(results)}
