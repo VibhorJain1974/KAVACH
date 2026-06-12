@@ -787,8 +787,8 @@ tb(s, 0.6, 1.86, 12.1, 0.68,
 feats2 = [
     ("VEDAS",  "ISRO VEDAS Integration",  "India-specific ionospheric\nscintillation data",    ACCENT,  ABORDER),
     ("WA/SMS", "WhatsApp + SMS Alerts",   "Multi-channel delivery\nzero missed notifications", YELLOW,  YBOARD),
-    ("TXF",    "Transformer Risk Model",  "Per-substation risk ranking\ninsurance-grade data",  ORANGE,  RGBColor(0x55,0x22,0x00)),
-    ("CME",    "CME Transit Model",       "4-18h precise countdown\nper-zone impact window",    GREEN,   GBORDER),
+    ("REPLY",  "Two-Way Voice Reply",     "Farmer presses 1 to confirm\n2 for help — KAVACH escalates",  GREEN,   GBORDER),
+    ("CME",    "CME Transit Model",       "4-18h precise countdown\nper-zone impact window",    ORANGE,  RGBColor(0x55,0x22,0x00)),
 ]
 for i, (code, title, desc, col, bc) in enumerate(feats2):
     col_n = i % 2
@@ -872,6 +872,6 @@ accent_bar(s)
 
 
 # ── Save ──────────────────────────────────────────────────────────────
-out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL_v3.pptx"
+out = r"E:\FARAWAY\docs\KAVACH_FARAWAY2026_FINAL_v4.pptx"
 prs.save(out)
 print(f"Saved: {len(prs.slides)} slides -> {out}")

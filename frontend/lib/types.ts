@@ -38,6 +38,7 @@ export interface DemoStep {
   alert_log?: AlertEvent[];
   call_sid?: string;
   call_status?: string;
+  calls?: { call_sid: string; status: string; method: string; to: string }[];
   fallback?: boolean;
   summary?: {
     storm_kp: number;

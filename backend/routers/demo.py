@@ -5,6 +5,7 @@ import os
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from dotenv import dotenv_values
+from twilio.rest import Client as TwilioClient
 from services.nasa import load_may2024_storm, parse_gst_events, classify_severity
 from services.discom_mapper import map_storm_to_discoms, get_all_discoms
 from services.twilio_caller import make_alert_call, call_multiple
@@ -200,3 +201,19 @@ async def trigger_demo_call(phones: str = None):
     loop = asyncio.get_event_loop()
     results = await loop.run_in_executor(None, call_multiple, targets, 9.0)
     return {"success": True, "calls": results, "total": len(results)}
+
+
+@router.get("/recording")
+async def get_recording(call_sid: str):
+    """Fetch Twilio recording URL for a call SID. Returns ready=False while call is still in progress."""
+    try:
+        client = TwilioClient(os.getenv("TWILIO_ACCOUNT_SID"), os.getenv("TWILIO_AUTH_TOKEN"))
+        recordings = client.recordings.list(call_sid=call_sid, limit=1)
+        if not recordings:
+            return {"ready": False, "call_sid": call_sid}
+        rec = recordings[0]
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{rec.sid}.mp3"
+        return {"ready": True, "url": url, "duration": rec.duration, "sid": rec.sid}
+    except Exception as e:
+        return {"ready": False, "error": str(e)}

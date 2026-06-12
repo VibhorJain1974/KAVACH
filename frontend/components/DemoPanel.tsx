@@ -15,17 +15,52 @@ const STEPS = [
 const TOTAL_SECS = 22.6;
 
 export default function DemoPanel({
-  onRun, onReset, running, step, callStatus,
+  onRun, onReset, running, step, callStatus, callSid, backendUrl,
 }: {
   onRun: () => void;
   onReset: () => void;
   running: boolean;
   step: DemoStep | null;
   callStatus: string | null;
+  callSid: string | null;
+  backendUrl: string;
 }) {
   const currentStep = step?.step || 0;
   const isComplete = step?.status === 'complete';
   const isCallStep = currentStep === 6;
+
+  // Recording proof state
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const [recordingPolling, setRecordingPolling] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!callSid || recordingUrl) return;
+    // Start polling 10s after call placed (recording takes a moment to process)
+    const startPoll = setTimeout(() => {
+      setRecordingPolling(true);
+      pollRef.current = setInterval(async () => {
+        try {
+          const r = await fetch(`${backendUrl}/demo/recording?call_sid=${callSid}`);
+          const data = await r.json();
+          if (data.ready && data.url) {
+            setRecordingUrl(data.url);
+            setRecordingPolling(false);
+            if (pollRef.current) clearInterval(pollRef.current);
+          }
+        } catch {}
+      }, 8000);
+    }, 10000);
+    return () => {
+      clearTimeout(startPoll);
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [callSid, recordingUrl, backendUrl]);
+
+  // Reset recording on demo reset
+  useEffect(() => {
+    if (!callSid) { setRecordingUrl(null); setRecordingPolling(false); }
+  }, [callSid]);
 
   // Elapsed timer for demo timeline bar
   const [elapsed, setElapsed] = useState(0);
@@ -192,9 +227,33 @@ export default function DemoPanel({
           fontSize: 9, color: 'var(--aurora-green)', letterSpacing: '0.06em',
           background: 'rgba(0,255,136,0.06)',
           border: '1px solid rgba(0,255,136,0.2)',
-          padding: '4px 8px', marginBottom: 8, borderRadius: 1,
+          padding: '4px 8px', marginBottom: 4, borderRadius: 1,
         }} className="animate-slide-up">
           ✓ {callStatus}
+        </div>
+      )}
+
+      {/* Recording proof */}
+      {recordingPolling && !recordingUrl && (
+        <div style={{
+          fontSize: 9, color: 'var(--aurora-yellow)', letterSpacing: '0.06em',
+          padding: '4px 8px', marginBottom: 4,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <span className="animate-blink">●</span> Recording processing...
+        </div>
+      )}
+      {recordingUrl && (
+        <div style={{
+          marginBottom: 8, padding: '8px 10px',
+          background: 'rgba(77,240,255,0.06)',
+          border: '1px solid rgba(77,240,255,0.3)',
+          borderRadius: 2,
+        }} className="animate-slide-up">
+          <div style={{ fontSize: 9, color: 'var(--plasma)', letterSpacing: '0.1em', marginBottom: 6 }}>
+            🎙 CALL PROOF — REAL RECORDING
+          </div>
+          <audio controls style={{ width: '100%', height: 28, accentColor: 'var(--plasma)' }} src={recordingUrl} />
         </div>
       )}
 

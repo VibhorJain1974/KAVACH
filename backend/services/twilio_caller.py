@@ -64,6 +64,7 @@ def call_with_fallback(to_number: str, kp: float = 9.0, _retry: bool = True) -> 
             twiml=_tts_twiml(kp),
             to=to_number,
             from_=FROM_NUMBER,
+            record=True,
         )
         logger.info(f"TTS call placed: SID={call.sid} to={to_number[-4:]}")
         return {"call_sid": call.sid, "status": call.status, "method": "TTS", "to": to_number}
@@ -76,6 +77,7 @@ def call_with_fallback(to_number: str, kp: float = 9.0, _retry: bool = True) -> 
             twiml=_audio_twiml(),
             to=to_number,
             from_=FROM_NUMBER,
+            record=True,
         )
         logger.info(f"Audio fallback call placed: SID={call.sid} to={to_number[-4:]}")
         return {"call_sid": call.sid, "status": call.status, "method": "AUDIO_FALLBACK", "to": to_number}

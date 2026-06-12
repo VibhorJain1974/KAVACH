@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [demoStep, setDemoStep] = useState<DemoStep | null>(null);
   const [statusMessage, setStatusMessage] = useState('KAVACH monitoring active — all clear');
   const [callStatus, setCallStatus] = useState<string | null>(null);
+  const [callSid, setCallSid] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('command');
   const [shieldScore, setShieldScore] = useState<number | null>(null);
   const audioRef = useRef<AudioFallbackRef>(null);
@@ -107,7 +108,8 @@ export default function Dashboard() {
               const newScore = Math.max(0, 100 - (kp >= 8 ? 80 : kp >= 7 ? 60 : 30));
               setShieldScore(newScore);
             }
-            if (event.call_sid) setCallStatus(`Call placed — SID: ${event.call_sid.slice(-8)}`);
+            if (event.call_sid) { setCallStatus(`Call placed — SID: ${event.call_sid.slice(-8)}`); setCallSid(event.call_sid); }
+            if (event.calls?.length) { const sid = event.calls[0]?.call_sid; if (sid) { setCallSid(sid); setCallStatus(`Call placed — SID: ${sid.slice(-8)}`); } }
             if (event.fallback) audioRef.current?.play();
             if (event.status === 'complete') {
               setCurrentKp(event.summary?.storm_kp || 9.0);
@@ -125,13 +127,20 @@ export default function Dashboard() {
 
   const resetDemo = useCallback(() => {
     setZones(prev => prev.map(z => ({ ...z, risk_level: 'green', affected: false })));
-    setCurrentKp(0);
     setSeverity('green');
     setAlerts([]);
     setDemoStep(null);
     setCallStatus(null);
+    setCallSid(null);
     setShieldScore(95);
     setStatusMessage('KAVACH monitoring active — all clear');
+    // Re-fetch live Kp instead of resetting to 0
+    fetch(`${BACKEND}/storm/current`).then(r => r.json()).then(d => { if (d.kp) setCurrentKp(d.kp); })
+      .catch(() => {
+        fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json')
+          .then(r => r.json()).then((arr: {kp_index: number}[]) => { if (arr?.length) setCurrentKp(arr[arr.length - 1].kp_index); })
+          .catch(() => {});
+      });
   }, []);
 
   const stormActive = severity === 'red';
@@ -192,6 +201,8 @@ export default function Dashboard() {
                   running={demoRunning}
                   step={demoStep}
                   callStatus={callStatus}
+                  callSid={callSid}
+                  backendUrl={BACKEND}
                 />
                 <AlertFeed alerts={alerts} />
               </div>
