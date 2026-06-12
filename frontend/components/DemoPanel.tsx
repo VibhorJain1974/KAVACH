@@ -1,16 +1,18 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import type { DemoStep } from '@/lib/types';
 
 const STEPS = [
-  { n: 1, label: 'Normal state' },
-  { n: 2, label: 'CME detected' },
-  { n: 3, label: 'Data ingested' },
-  { n: 4, label: 'Zones mapped' },
-  { n: 5, label: 'Alerts dispatched' },
-  { n: 6, label: 'Hindi call placed' },
-  { n: 7, label: 'Complete' },
+  { n: 1, label: 'Normal state',       t: 0   },
+  { n: 2, label: 'CME detected',       t: 3   },
+  { n: 3, label: 'Data ingested',      t: 7   },
+  { n: 4, label: 'Zones mapped',       t: 11  },
+  { n: 5, label: 'Alerts dispatched',  t: 15  },
+  { n: 6, label: 'Hindi call placed',  t: 18  },
+  { n: 7, label: 'Complete',           t: 22.6 },
 ];
+const TOTAL_SECS = 22.6;
 
 export default function DemoPanel({
   onRun, onReset, running, step, callStatus,
@@ -23,6 +25,35 @@ export default function DemoPanel({
 }) {
   const currentStep = step?.step || 0;
   const isComplete = step?.status === 'complete';
+  const isCallStep = currentStep === 6;
+
+  // Elapsed timer for demo timeline bar
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (running && !isComplete) {
+      if (!startRef.current) startRef.current = Date.now();
+      const tick = () => {
+        const e = Math.min((Date.now() - (startRef.current || Date.now())) / 1000, TOTAL_SECS);
+        setElapsed(e);
+        if (e < TOTAL_SECS) rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }
+    if (!running && !isComplete) {
+      cancelAnimationFrame(rafRef.current);
+      if (!step) { startRef.current = null; setElapsed(0); }
+    }
+    if (isComplete) {
+      cancelAnimationFrame(rafRef.current);
+      setElapsed(TOTAL_SECS);
+    }
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [running, isComplete, step]);
+
+  const pct = Math.min(elapsed / TOTAL_SECS, 1) * 100;
 
   return (
     <div className="panel" style={{
@@ -35,40 +66,125 @@ export default function DemoPanel({
         <span style={{ fontSize: 9, color: 'rgba(77,240,255,0.4)' }}>MAY 2024 REPLAY</span>
       </div>
 
-      {/* Step progress */}
-      <div style={{ marginBottom: 12 }}>
+      {/* Timeline progress bar */}
+      {(running || isComplete) && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            fontSize: 8, color: 'rgba(255,255,255,0.25)', marginBottom: 4,
+            fontFamily: 'DM Mono, monospace', letterSpacing: '0.08em',
+          }}>
+            <span>T+0s</span>
+            <span style={{ color: isComplete ? 'var(--aurora-green)' : 'rgba(255,255,255,0.4)' }}>
+              T+{elapsed.toFixed(1)}s
+            </span>
+            <span>T+22.6s</span>
+          </div>
+          <div style={{
+            height: 4, background: 'rgba(255,255,255,0.06)',
+            borderRadius: 2, overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${pct}%`,
+              background: isComplete
+                ? 'linear-gradient(90deg, var(--aurora-green), var(--plasma))'
+                : 'linear-gradient(90deg, var(--plasma), var(--aurora-yellow))',
+              borderRadius: 2,
+              transition: 'width 0.1s linear, background 0.5s ease',
+              boxShadow: `0 0 8px ${isComplete ? 'var(--aurora-green)' : 'var(--plasma)'}`,
+            }} />
+          </div>
+          {/* Step tick marks */}
+          <div style={{ position: 'relative', height: 8, marginTop: 2 }}>
+            {STEPS.map(s => (
+              <div key={s.n} style={{
+                position: 'absolute',
+                left: `${(s.t / TOTAL_SECS) * 100}%`,
+                transform: 'translateX(-50%)',
+                width: 1, height: 6,
+                background: currentStep >= s.n
+                  ? 'rgba(77,240,255,0.6)'
+                  : 'rgba(255,255,255,0.12)',
+              }} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Step list */}
+      <div style={{ marginBottom: 10 }}>
         {STEPS.map(s => {
           const done = currentStep > s.n;
           const active = currentStep === s.n;
+          const isCallMoment = s.n === 6;
           return (
             <div key={s.n} style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              marginBottom: 4, opacity: done || active ? 1 : 0.35,
+              marginBottom: 3, opacity: done || active ? 1 : 0.3,
               transition: 'opacity 0.3s ease',
             }}>
               <div style={{
                 width: 14, height: 14, borderRadius: '50%', flexShrink: 0,
-                background: done ? 'var(--aurora-green)' : active ? 'var(--aurora-red)' : 'rgba(255,255,255,0.1)',
-                border: active ? '2px solid var(--aurora-red)' : 'none',
-                boxShadow: active ? '0 0 8px var(--aurora-red)' : done ? '0 0 6px var(--aurora-green)' : 'none',
+                background: done ? 'var(--aurora-green)' : active ? (isCallMoment ? 'var(--aurora-yellow)' : 'var(--aurora-red)') : 'rgba(255,255,255,0.08)',
+                border: active ? `2px solid ${isCallMoment ? 'var(--aurora-yellow)' : 'var(--aurora-red)'}` : 'none',
+                boxShadow: active
+                  ? `0 0 10px ${isCallMoment ? 'var(--aurora-yellow)' : 'var(--aurora-red)'}`
+                  : done ? '0 0 6px var(--aurora-green)' : 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 7,
+                fontSize: 7, transition: 'all 0.3s ease',
               }}>
                 {done && <span style={{ color: '#000', fontWeight: 700 }}>✓</span>}
                 {active && <span style={{ display: 'block', width: 4, height: 4, borderRadius: '50%', background: '#000' }} />}
               </div>
               <span style={{
                 fontSize: 10,
-                color: done ? 'var(--aurora-green)' : active ? '#fff' : 'rgba(255,255,255,0.4)',
+                color: done ? 'var(--aurora-green)' : active ? '#fff' : 'rgba(255,255,255,0.35)',
                 letterSpacing: '0.06em',
+                transition: 'color 0.3s ease',
+                flex: 1,
               }}>
                 {s.label}
               </span>
-              {active && running && <span className="animate-blink" style={{ fontSize: 9, color: 'var(--aurora-red)', marginLeft: 'auto' }}>●</span>}
+              {active && running && (
+                <span className={`animate-blink`} style={{
+                  fontSize: 9,
+                  color: isCallMoment ? 'var(--aurora-yellow)' : 'var(--aurora-red)',
+                }}>●</span>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* CALL LIVE moment — special treatment */}
+      {(isCallStep && running) && (
+        <div style={{
+          margin: '8px 0',
+          padding: '10px 12px',
+          background: 'rgba(255,210,63,0.07)',
+          border: '1px solid rgba(255,210,63,0.35)',
+          borderRadius: 2,
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'slide-up 0.3s ease-out',
+        }}>
+          <div style={{
+            fontSize: 18, animation: 'phone-ring 0.6s ease-in-out infinite',
+          }}>📞</div>
+          <div>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
+              color: 'var(--aurora-yellow)',
+              marginBottom: 2,
+            }}>
+              HINDI CALL FIRING
+            </div>
+            <div style={{ fontSize: 9, color: 'rgba(255,210,63,0.6)' }}>
+              Twilio → +91 · Amazon Polly Aditi
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Call status */}
       {callStatus && (
@@ -76,9 +192,9 @@ export default function DemoPanel({
           fontSize: 9, color: 'var(--aurora-green)', letterSpacing: '0.06em',
           background: 'rgba(0,255,136,0.06)',
           border: '1px solid rgba(0,255,136,0.2)',
-          padding: '4px 8px', marginBottom: 10, borderRadius: 1,
+          padding: '4px 8px', marginBottom: 8, borderRadius: 1,
         }} className="animate-slide-up">
-          📞 {callStatus}
+          ✓ {callStatus}
         </div>
       )}
 
@@ -98,7 +214,7 @@ export default function DemoPanel({
             <div style={{ borderTop: '1px solid rgba(255,45,74,0.15)', paddingTop: 5, marginBottom: 5 }}>
               <div style={{ color: 'rgba(77,240,255,0.6)', letterSpacing: '0.08em', marginBottom: 3, fontSize: 8 }}>TIMELINE — MAY 10 2024</div>
               <div style={{ color: 'rgba(255,255,255,0.45)' }}>Storm onset · 17:05 UTC</div>
-              <div style={{ color: 'var(--aurora-yellow, #ffd23f)', fontWeight: 600 }}>KAVACH alert · 17:30 UTC</div>
+              <div style={{ color: 'var(--aurora-yellow)', fontWeight: 600 }}>KAVACH alert · 17:30 UTC</div>
               <div style={{ color: 'rgba(255,45,74,0.8)' }}>Peak Kp=9.0 · 00:00 UTC+1</div>
               <div style={{ color: 'var(--aurora-green)', marginTop: 2 }}>Warning window: {step.summary.timeline.warning_window_hours}h ahead</div>
             </div>
@@ -120,11 +236,10 @@ export default function DemoPanel({
           onClick={onRun}
           disabled={running}
           style={{
-            flex: 1,
-            padding: '8px 0',
-            background: running ? 'rgba(255,45,74,0.1)' : 'rgba(255,45,74,0.15)',
-            border: `1px solid ${running ? 'rgba(255,45,74,0.3)' : 'rgba(255,45,74,0.5)'}`,
-            color: running ? 'rgba(255,45,74,0.5)' : 'var(--aurora-red)',
+            flex: 1, padding: '9px 0',
+            background: running ? 'rgba(255,45,74,0.08)' : 'rgba(255,45,74,0.15)',
+            border: `1px solid ${running ? 'rgba(255,45,74,0.25)' : 'rgba(255,45,74,0.5)'}`,
+            color: running ? 'rgba(255,45,74,0.45)' : 'var(--aurora-red)',
             fontSize: 10, letterSpacing: '0.12em',
             cursor: running ? 'not-allowed' : 'pointer',
             borderRadius: 1, transition: 'all 0.2s',
@@ -134,17 +249,16 @@ export default function DemoPanel({
           {running ? '▶ RUNNING...' : '▶ REPLAY STORM'}
         </button>
         <button
-          onClick={onReset}
+          onClick={() => { onReset(); startRef.current = null; setElapsed(0); }}
           disabled={running}
           style={{
-            padding: '8px 12px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'rgba(255,255,255,0.4)',
-            fontSize: 10,
-            cursor: running ? 'not-allowed' : 'pointer',
-            borderRadius: 1,
-            fontFamily: 'DM Mono, monospace',
+            padding: '9px 12px',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.35)',
+            fontSize: 10, cursor: running ? 'not-allowed' : 'pointer',
+            borderRadius: 1, fontFamily: 'DM Mono, monospace',
+            transition: 'all 0.2s',
           }}
         >
           ↺

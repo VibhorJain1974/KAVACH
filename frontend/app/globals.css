@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -30,8 +30,11 @@ html, body {
   font-family: 'DM Mono', monospace;
   font-size: 13px;
   height: 100%;
-  overflow: hidden;
+  /* overflow: hidden set per-page via class; landing page needs scroll */
 }
+
+/* Dashboard is full-screen no-scroll; landing page scrolls */
+.dashboard-root { overflow: hidden; height: 100dvh; }
 
 /* scanline overlay */
 body::before {
@@ -42,7 +45,7 @@ body::before {
   z-index: 9999;
 }
 
-.font-display { font-family: 'Syne', sans-serif; }
+.font-display { font-family: 'Space Grotesk', var(--font-space-grotesk), sans-serif; }
 .font-mono { font-family: 'DM Mono', monospace; }
 
 /* Glow effects */
@@ -82,6 +85,15 @@ body::before {
 @keyframes data-stream {
   from { transform: translateY(0); opacity: 0.7; }
   to { transform: translateY(-100%); opacity: 0; }
+}
+
+@keyframes phone-ring {
+  0%,100% { transform: rotate(0deg); }
+  15%     { transform: rotate(-18deg); }
+  30%     { transform: rotate(18deg); }
+  45%     { transform: rotate(-12deg); }
+  60%     { transform: rotate(12deg); }
+  75%     { transform: rotate(-6deg); }
 }
 
 .animate-pulse-danger { animation: pulse-danger 2s ease-in-out infinite; }
