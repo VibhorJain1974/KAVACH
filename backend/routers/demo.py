@@ -1,8 +1,4 @@
-"""
-Demo replay endpoint — drives the hackathon wow moment.
-POST /demo/replay → SSE stream of events replaying May 2024 storm.
-POST /demo/trigger-call → fires Twilio call to demo phone.
-"""
+# Demo replay — SSE stream replaying the May 2024 G5 storm, ≤90s sequence.
 import asyncio
 import json
 import os
@@ -11,6 +7,8 @@ from fastapi.responses import StreamingResponse
 from services.nasa import load_may2024_storm, parse_gst_events, classify_severity
 from services.discom_mapper import map_storm_to_discoms, get_all_discoms
 from services.twilio_caller import make_alert_call
+from services.aurora_predictor import get_active_aurora_locations
+from services.storm_memory import get_memory_totals
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
@@ -97,7 +95,54 @@ async def _replay_generator(phone: str = None, speed: float = 1.0):
 
     await delay(1)
 
-    # Step 7: Done
+    # Step 6b: Aurora alert fires for Ladakh (NEW)
+    aurora_locations = get_active_aurora_locations(storm["max_kp"])
+    if aurora_locations:
+        top = aurora_locations[0]
+        yield event({
+            "step": 6,
+            "status": "aurora_alert",
+            "message": f"KAVACH aurora alert: {top['name']} — Northern Lights dikhne ki sambhavana hai. Kp={storm['max_kp']}",
+            "aurora": {
+                "active": True,
+                "location": top["name"],
+                "kp": storm["max_kp"],
+                "probability_pct": top["probability_pct"],
+                "hindi_message": f"Aaj raat {top['name']} se Northern Lights dikhne ki sambhavana hai. Kp index: {storm['max_kp']}.",
+            },
+        })
+        await delay(3)
+
+    # Step 8: Daily Shield score drops 95 → 12 (NEW)
+    yield event({
+        "step": 8,
+        "status": "shield_update",
+        "message": "KAVACH Daily Shield: Space Weather Score drops 95 → 12. EXTREME storm conditions.",
+        "shield": {
+            "score_before": 95,
+            "score_after": 12,
+            "label": "EXTREME — G5 EVENT",
+            "color": "#ff4444",
+        },
+    })
+    await delay(2)
+
+    # Step 9: Memory counter increments (NEW)
+    memory = get_memory_totals()
+    yield event({
+        "step": 9,
+        "status": "memory_update",
+        "message": f"KAVACH Memory: {memory['total_alerts']} alerts fired across {memory['total_storms']} storms since 2003. Protecting India every cycle.",
+        "memory": {
+            "total_alerts": memory["total_alerts"],
+            "total_storms": memory["total_storms"],
+            "total_subscribers": memory["total_subscribers_called"],
+            "years": memory["years_covered"],
+        },
+    })
+    await delay(3)
+
+    # Step 10: Done
     yield event({
         "step": 7,
         "status": "complete",

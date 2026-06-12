@@ -41,9 +41,8 @@
 ## PHASE 5 - POLISH + SHIP - MOSTLY COMPLETE
 - [x] P5.1 Frontend LIVE on Vercel
       https://frontend-2ajotdnfi-vibhorjain1974s-projects.vercel.app
-- [ ] P5.2 Railway backend - NEEDS USER LOGIN
-      Visit https://railway.com/activate, code changes each session
-      Then: cd E:\FARAWAY\backend && railway init && railway up
+- [x] P5.2 Railway backend - LIVE
+      https://powerful-respect-production-482e.up.railway.app
 - [x] P5.3 README.md written with architecture diagram
 - [x] P5.4 .env.example documented
 - [ ] P5.5 Security scan (low priority for hackathon)
@@ -56,19 +55,30 @@
 - [x] P6.2 Slide content written (15 slides in PRESENTATION.md)
 - [ ] P6.3 Submit to Unstop before June 14 11:59 PM IST
 
+## PHASE 7 - v2 COUNCIL FEATURES - COMPLETE (2026-06-10)
+- [x] P7.1 aurora_predictor.py + /aurora/* endpoints
+- [x] P7.2 daily_shield.py + /shield/* endpoints + APScheduler 6:30 AM IST
+- [x] P7.3 storm_memory.py + /memory/* endpoints (4 historical storms, hardcoded)
+- [x] P7.4 Three.js SolarHeader (Sun+Earth+CME particles, storm-reactive)
+- [x] P7.5 AuroraTab.tsx + DailyShieldTab.tsx + MemoryTab.tsx
+- [x] P7.6 Dashboard rebuilt: 4-tab system (COMMAND/AURORA/DAILY SHIELD/MEMORY)
+- [x] P7.7 Demo mode upgraded: 9 steps, aurora alert + shield drop + memory counter
+- [x] P7.8 supabase_migration.sql: v2 tables added
+- [x] P7.9 docs/future_features.md: full roadmap for Delhi + Tokyo rounds
+- [x] P7.10 Twilio hardened: call_with_fallback() TTS→MP3 fallback + 30s retry
+
 ---
 
 ## BLOCKERS (see blockers.md)
 1. Railway login: run `railway login` to get new code, visit railway.com/activate
-2. Supabase: paste backend/supabase_migration.sql in dashboard SQL editor
-3. Hindi audio quality: current is gTTS, usable, Twilio uses better Polly Aditi
+2. Supabase: paste backend/supabase_migration.sql in dashboard SQL editor (v2 tables added)
 
 ## WHAT WORKS RIGHT NOW
-- Backend API: localhost:8000 (all endpoints)
+- Backend API: localhost:8000 (all endpoints including /aurora, /shield, /memory)
 - Frontend: Next.js build (run npm run dev in frontend/)
-- Demo replay: 22.6s end-to-end, all 7 steps
-- Twilio call: PROVEN (2 live calls placed this session)
-- Vercel URL: https://frontend-2ajotdnfi-vibhorjain1974s-projects.vercel.app
+- Demo replay: 9-step enhanced sequence with aurora + shield + memory
+- Twilio call: HARDENED (TTS primary + MP3 fallback + retry)
+- Vercel URL: https://frontend-rust-xi-79.vercel.app
 
 ## COMPLETED LOG
 - 2026-06-08: Phase 0 - storm data confirmed Kp=9.0
@@ -78,3 +88,4 @@
 - 2026-06-08: Phase 4 - Demo 22.6s, all steps, GATE PASSED
 - 2026-06-08: Phase 5 (partial) - Vercel deployed, README, tests
 - 2026-06-08: Phase 6 (partial) - Presentation script written
+- 2026-06-10: Phase 7 - v2 features (Aurora/Shield/Memory), UI rebuild, Twilio hardened

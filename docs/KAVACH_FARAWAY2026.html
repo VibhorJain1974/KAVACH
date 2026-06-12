@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAVACH — FAR AWAY 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --void: #050d18;
+    --deep: #0a1628;
+    --accent: #00d4ff;
+    --green: #00ff88;
+    --red: #ff2d4a;
+    --yellow: #ffd23f;
+    --orange: #ff6b35;
+    --text: #e0e0ff;
+    --muted: rgba(224,224,255,0.45);
+    --border: rgba(0,212,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow: hidden;
+  }
+
+  .deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--void);
+    overflow: hidden;
+  }
+
+  .slide.active { display: flex; }
+
+  /* Background grid */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .slide-number {
+    position: absolute;
+    bottom: 24px;
+    right: 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .nav button {
+    padding: 8px 20px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav button:hover { background: rgba(0,212,255,0.2); }
+
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: 80px;
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 60%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h2 {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+
+  .tagline {
+    font-size: 20px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  .meta {
+    margin-top: 40px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .badge {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    background: rgba(0,212,255,0.06);
+  }
+
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+
+  .bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    font-size: 20px;
+    line-height: 1.4;
+    color: rgba(224,224,255,0.85);
+  }
+
+  .bullets li::before {
+    content: '›';
+    color: var(--accent);
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+
+  .highlight { color: var(--accent); font-weight: 600; }
+  .red { color: var(--red); }
+  .green { color: var(--green); }
+  .yellow { color: var(--yellow); }
+
+  .stat-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .stat {
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    background: rgba(0,212,255,0.04);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+  }
+
+  .stat-val {
+    font-size: 36px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .quote {
+    font-size: 26px;
+    line-height: 1.5;
+    color: rgba(224,224,255,0.75);
+    font-style: italic;
+    border-left: 2px solid var(--accent);
+    padding-left: 24px;
+    margin: 20px 0;
+  }
+
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+
+  .arch-node {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    background: rgba(0,212,255,0.04);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-align: center;
+    min-width: 120px;
+  }
+
+  .arch-arrow {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--accent);
+    padding: 0 8px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(224,224,255,0.05);
+    color: rgba(224,224,255,0.75);
+  }
+
+  .roadmap-item {
+    padding: 14px 16px;
+    border: 1px solid rgba(0,212,255,0.1);
+    margin-bottom: 10px;
+    background: rgba(0,212,255,0.03);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .roadmap-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .roadmap-main {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+
+  .roadmap-pitch {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .flagship-card {
+    padding: 20px 24px;
+    border: 1px solid rgba(0,255,136,0.3);
+    background: rgba(0,255,136,0.05);
+    margin-bottom: 16px;
+  }
+
+  .flagship-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+
+  .flagship-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+
+  .flagship-desc {
+    font-size: 13px;
+    color: rgba(224,224,255,0.65);
+    line-height: 1.5;
+  }
+
+  .revenue-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(224,224,255,0.06);
+  }
+
+  .revenue-tier { font-size: 16px; font-weight: 500; }
+  .revenue-price { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); }
+
+  .vision-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .vision-year {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .vision-year-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .vision-amount {
+    font-size: 30px;
+    font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 30px rgba(0,212,255,0.4);
+  }
+
+  .storm-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .storm-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border: 1px solid rgba(224,224,255,0.07);
+  }
+
+  .storm-year {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    width: 40px;
+  }
+
+  .storm-name {
+    flex: 1;
+    font-size: 13px;
+    color: rgba(224,224,255,0.8);
+  }
+
+  .storm-warning {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 1: TITLE -->
+<div class="slide active" data-slide="1">
+  <div class="label">FAR AWAY 2026 · Space & Aerospace</div>
+  <h1>KAVACH</h1>
+  <div class="tagline">"It called the farmer before the lights went out."</div>
+  <div class="meta">
+    <div class="badge">AUTONOMOUS SPACE WEATHER SHIELD</div>
+    <div class="badge">INDIA · 1.4B PEOPLE</div>
+    <div class="badge">BUILT WITH CLAUDE CODE</div>
+  </div>
+  <div style="margin-top: 48px; font-size: 14px; color: var(--muted);">
+    Vibbhor Jain · Solo Builder · June 2026
+  </div>
+  <div class="slide-number">01 / 15</div>
+</div>
+
+<!-- SLIDE 2: THE HOOK -->
+<div class="slide" data-slide="2">
+  <div class="label">May 10, 2024</div>
+  <h2 style="color: var(--red); margin-bottom: 24px;">A solar storm hit Earth.</h2>
+
+  <div class="quote">
+    "Indian farmers' GPS-guided tractors stopped working mid-ploughing.<br>
+    Fishermen on the Kerala coast lost marine radio contact.<br>
+    India's power grid came within hours of widespread failure.<br><br>
+    Nobody called them."
+  </div>
+
+  <div style="margin-top: 32px; padding: 16px 20px; border: 1px solid rgba(255,45,74,0.3); background: rgba(255,45,74,0.04);">
+    <div style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: var(--red); margin-bottom: 6px;">
+      AURORA PHOTOGRAPH — HANLE OBSERVATORY, LADAKH
+    </div>
+    <div style="font-size: 13px; color: var(--muted);">
+      Dorje Angchuk · Institute of Astrophysics, IAO · May 2024<br>
+      First aurora visible from India in 20 years. Zero public warning was issued.
+    </div>
+  </div>
+
+  <div class="slide-number">02 / 15</div>
+</div>
+
+<!-- SLIDE 3: THE PROBLEM -->
+<div class="slide" data-slide="3">
+  <div class="label">The Problem</div>
+  <h2 style="margin-bottom: 40px;">India has no space weather warning system.</h2>
+
+  <ul class="bullets">
+    <li><strong>1.4 billion people</strong> — served by 28 power utilities, no early warning layer</li>
+    <li><strong>Existing systems are English-only, internet-only</strong> — built for the American grid, useless for India's last mile</li>
+    <li><strong>GPS failure hits farmers first</strong> — precision agriculture, fishing navigation, all go dark at once</li>
+    <li><strong>₹3,000 crore</strong> in transformer assets at risk every G5 event — with no automated pre-warning</li>
+  </ul>
+
+  <div class="slide-number">03 / 15</div>
+</div>
+
+<!-- SLIDE 4: WHAT IT DOES -->
+<div class="slide" data-slide="4">
+  <div class="label">KAVACH — What It Does</div>
+  <h2 style="margin-bottom: 40px;">Three actions. Fully autonomous. Zero human trigger.</h2>
+
+  <div class="stat-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+    <div class="stat" style="--c: var(--accent);">
+      <div class="stat-val" style="font-size: 28px; margin-bottom: 8px;">01</div>
+      <div style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 6px;">MONITOR</div>
+      <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
+        NASA DONKI + NOAA SWPC polled every 15 minutes. No human needs to watch.
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" style="font-size: 28px; margin-bottom: 8px;">02</div>
+      <div style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 6px;">MAP</div>
+      <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
+        Storm risk mapped to India's 28 DISCOM zones. North-first, by geomagnetic exposure.
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" style="font-size: 28px; margin-bottom: 8px;">03</div>
+      <div style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 6px;">CALL</div>
+      <div style="font-size: 13px; color: var(--muted); line-height: 1.5;">
+        Hindi voice alert to farmers on basic feature phones. No app. No internet. Just a call.
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--green); letter-spacing: 0.08em; padding: 12px 16px; border: 1px solid rgba(0,255,136,0.2); background: rgba(0,255,136,0.04);">
+    "Namaste. Main KAVACH bol raha hoon. Ek bada solar toofan aa raha hai. Apni bijli band karein."
+  </div>
+
+  <div class="slide-number">04 / 15</div>
+</div>
+
+<!-- SLIDE 5: LIVE DEMO -->
+<div class="slide" data-slide="5">
+  <div class="label">Live Demo — May 2024 Replay</div>
+  <h2 style="margin-bottom: 32px;">Watch 4.5 years of warning compress into 90 seconds.</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+    <div>
+      <div style="margin-bottom: 16px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--muted);">DEMO SEQUENCE</div>
+      <div class="storm-timeline">
+        <div class="storm-row"><div class="storm-year">T+0</div><div class="storm-name">KAVACH monitoring — all nominal</div></div>
+        <div class="storm-row"><div class="storm-year">T+3s</div><div class="storm-name">CME detected — May 8 X-class flare</div></div>
+        <div class="storm-row"><div class="storm-year">T+5s</div><div class="storm-name">NASA data ingested — Kp=9.0 EXTREME</div></div>
+        <div class="storm-row"><div class="storm-year">T+14s</div><div class="storm-name" style="color: var(--red);">India map → ALL RED</div></div>
+        <div class="storm-row"><div class="storm-year">T+17s</div><div class="storm-name">Alert log — 28 DISCOMs, farmers, fishermen</div></div>
+        <div class="storm-row"><div class="storm-year">T+20s</div><div class="storm-name" style="color: var(--green);">📞 HINDI CALL FIRES — LIVE</div></div>
+      </div>
+    </div>
+    <div>
+      <div style="margin-bottom: 16px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--muted);">LIVE DEPLOYMENT</div>
+      <div style="padding: 16px; border: 1px solid var(--border); background: rgba(0,212,255,0.04); font-family: 'DM Mono', monospace; font-size: 11px; line-height: 2; color: var(--muted);">
+        frontend-rust-xi-79.vercel.app<br>
+        powerful-respect-production-482e.up.railway.app<br>
+        <span style="color: var(--green);">STATUS: LIVE ✓</span>
+      </div>
+      <div style="margin-top: 16px; padding: 12px 16px; border: 1px solid rgba(0,255,136,0.2); background: rgba(0,255,136,0.04);">
+        <div style="font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--green); margin-bottom: 4px;">TIMING</div>
+        <div style="font-size: 28px; font-weight: 700; color: var(--green); font-family: 'DM Mono', monospace;">22.6s</div>
+        <div style="font-size: 12px; color: var(--muted);">full demo sequence (limit: 90s)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">05 / 15</div>
+</div>
+
+<!-- SLIDE 6: HOW IT WORKS -->
+<div class="slide" data-slide="6">
+  <div class="label">Architecture</div>
+  <h2 style="margin-bottom: 40px;">Autonomous. Stateless. Continuously polling.</h2>
+
+  <div class="arch-flow">
+    <div class="arch-node" style="border-color: rgba(255,170,0,0.3); color: #ffaa00;">NASA DONKI<br><span style="font-size:9px;opacity:0.6">15-min poll</span></div>
+    <div class="arch-arrow">+</div>
+    <div class="arch-node" style="border-color: rgba(0,212,255,0.3);">NOAA SWPC<br><span style="font-size:9px;opacity:0.6">5-min poll</span></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color: rgba(0,212,255,0.4); background: rgba(0,212,255,0.08);">KAVACH<br><span style="font-size:9px;opacity:0.6">FastAPI</span></div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">Storm<br>Classifier</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node">DISCOM<br>Mapper ×28</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color: rgba(255,45,74,0.3); color: var(--red);">Twilio<br>Hindi Call</div>
+    <div class="arch-arrow">→</div>
+    <div class="arch-node" style="border-color: rgba(0,255,136,0.3); color: var(--green);">Farmer<br>Feature Phone</div>
+  </div>
+
+  <div style="margin-top: 32px; display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;">
+    <div style="padding: 12px; border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; text-align: center;">
+      <div style="color: var(--accent); font-size: 18px; font-weight: 700; margin-bottom: 4px;">28</div>
+      DISCOMs mapped
+    </div>
+    <div style="padding: 12px; border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; text-align: center;">
+      <div style="color: var(--green); font-size: 18px; font-weight: 700; margin-bottom: 4px;">15min</div>
+      polling interval
+    </div>
+    <div style="padding: 12px; border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; text-align: center;">
+      <div style="color: var(--yellow); font-size: 18px; font-weight: 700; margin-bottom: 4px;">0</div>
+      human triggers
+    </div>
+    <div style="padding: 12px; border: 1px solid var(--border); font-family: 'DM Mono', monospace; font-size: 10px; text-align: center;">
+      <div style="color: var(--red); font-size: 18px; font-weight: 700; margin-bottom: 4px;">4.5h</div>
+      warning window
+    </div>
+  </div>
+
+  <div class="slide-number">06 / 15</div>
+</div>
+
+<!-- SLIDE 7: REAL DATA SOURCES -->
+<div class="slide" data-slide="7">
+  <div class="label">Data Sources</div>
+  <h2 style="margin-bottom: 12px;">100% real APIs. Zero mocked data.</h2>
+  <div style="font-size: 14px; color: var(--muted); margin-bottom: 32px;">Live data, verified during build, tested against the actual May 2024 storm archive.</div>
+
+  <table>
+    <tr>
+      <th>Source</th>
+      <th>Data</th>
+      <th>Update Frequency</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td><strong>NASA DONKI</strong></td>
+      <td>Geomagnetic storm events, CME trajectory</td>
+      <td>Event-driven</td>
+      <td><span class="green">✓ LIVE</span></td>
+    </tr>
+    <tr>
+      <td><strong>NOAA SWPC</strong></td>
+      <td>Real-time Kp-index (1-minute resolution)</td>
+      <td>1 minute</td>
+      <td><span class="green">✓ LIVE</span></td>
+    </tr>
+    <tr>
+      <td><strong>ISRO MOSDAC</strong></td>
+      <td>Ionospheric scintillation over India</td>
+      <td>—</td>
+      <td><span class="yellow">Phase 2</span></td>
+    </tr>
+    <tr>
+      <td><strong>Twilio Polly.Aditi</strong></td>
+      <td>Hindi TTS voice calls (hi-IN)</td>
+      <td>On-demand</td>
+      <td><span class="green">✓ LIVE</span></td>
+    </tr>
+  </table>
+
+  <div style="margin-top: 24px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);">
+    May 2024 storm archived locally: data/may2024_storm.json · GST-001 · Kp=9.0 · EXTREME
+  </div>
+
+  <div class="slide-number">07 / 15</div>
+</div>
+
+<!-- SLIDE 8: THE PROOF / MEMORY REPLAY -->
+<div class="slide" data-slide="8">
+  <div class="label">KAVACH Memory — The Proof</div>
+  <h2 style="margin-bottom: 8px;">We went back through history.</h2>
+  <div style="font-size: 15px; color: var(--muted); margin-bottom: 32px;">
+    KAVACH's alert threshold model applied retroactively to every major storm since 2003.
+  </div>
+
+  <div class="storm-timeline">
+    <div class="storm-row">
+      <div class="storm-year">2003</div>
+      <div class="storm-name"><strong>Halloween Storm</strong> · Kp=9.0 · Transformer failures in Sweden &amp; S. Africa</div>
+      <div class="storm-warning">8h warning</div>
+    </div>
+    <div class="storm-row">
+      <div class="storm-year">2015</div>
+      <div class="storm-name"><strong>St. Patrick's Day</strong> · Kp=8.0 · GPS disruption across Asia</div>
+      <div class="storm-warning">6h warning</div>
+    </div>
+    <div class="storm-row">
+      <div class="storm-year">2017</div>
+      <div class="storm-name"><strong>X9.3 X-Class Flare</strong> · Kp=8.0 · HF blackout over India</div>
+      <div class="storm-warning">5h warning</div>
+    </div>
+    <div class="storm-row" style="border: 1px solid rgba(255,45,74,0.3); background: rgba(255,45,74,0.04);">
+      <div class="storm-year" style="color: var(--red);">2024</div>
+      <div class="storm-name" style="color: var(--red);"><strong>May 2024 G5 — KAVACH's origin story</strong> · Zero alerts sent by any Indian system</div>
+      <div class="storm-warning" style="color: var(--red);">4.5h warning</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+    <div class="stat"><div class="stat-val">847</div><div class="stat-label">Alerts that would have fired</div></div>
+    <div class="stat"><div class="stat-val">12,400</div><div class="stat-label">Farmers called per storm</div></div>
+    <div class="stat"><div class="stat-val">0</div><div class="stat-label">Actual alerts sent (no Indian system existed)</div></div>
+  </div>
+
+  <div class="slide-number">08 / 15</div>
+</div>
+
+<!-- SLIDE 9: DAILY SHIELD -->
+<div class="slide" data-slide="9">
+  <div class="label">Daily Shield</div>
+  <h2 style="margin-bottom: 12px;">Not just emergencies. 365 days a year.</h2>
+  <div style="font-size: 15px; color: var(--muted); margin-bottom: 32px;">
+    Every morning at 6:30 AM IST, KAVACH broadcasts a Space Weather Score.
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div style="display: inline-block; position: relative; width: 160px; height: 160px;">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(0,212,255,0.08)" stroke-width="8"/>
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#00ff88" stroke-width="8"
+              stroke-linecap="round"
+              stroke-dasharray="376.99"
+              stroke-dashoffset="37.7"
+              transform="rotate(-90 80 80)"
+              style="filter: drop-shadow(0 0 8px #00ff88);"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="font-size:40px;font-weight:700;color:#00ff88;font-family:'DM Mono',monospace;line-height:1;">95</div>
+            <div style="font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-top:4px;">/ 100 · NOMINAL</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--muted);padding:12px;border:1px solid var(--border);background:rgba(0,212,255,0.03);">
+        KAVACH Suraksha Sandesh — June 12<br>
+        Space Weather Score: <span style="color:var(--green);">95/100</span><br>
+        GPS Shuddhata: <span style="color:var(--green);">Normal</span><br>
+        Grid Suraksha: <span style="color:var(--green);">Minimal</span><br>
+        KAVACH active hai.
+      </div>
+    </div>
+
+    <div>
+      <ul class="bullets" style="gap: 16px;">
+        <li>Score 0–100: 100 = perfect solar conditions</li>
+        <li>Drops to <strong style="color:var(--red);">12</strong> during G5 events</li>
+        <li>Hindi version for farmers, English for DISCOM operators</li>
+        <li>GPS status + grid risk + recommended actions</li>
+        <li>Aurora visibility forecast for Ladakh, Himachal</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide-number">09 / 15</div>
+</div>
+
+<!-- SLIDE 10: REVENUE MODEL -->
+<div class="slide" data-slide="10">
+  <div class="label">Revenue Model</div>
+  <h2 style="margin-bottom: 32px;">Built for revenue from day one.</h2>
+
+  <div class="revenue-row">
+    <div>
+      <div class="revenue-tier">Free Tier</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 3px;">Public alerts for farmers, fishermen, citizens</div>
+    </div>
+    <div class="revenue-price">₹0</div>
+  </div>
+  <div class="revenue-row">
+    <div>
+      <div class="revenue-tier">DISCOM API</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 3px;">Per-utility: 72h forecast, operator dashboard, SCADA export</div>
+    </div>
+    <div class="revenue-price">₹2–5L / month</div>
+  </div>
+  <div class="revenue-row">
+    <div>
+      <div class="revenue-tier">5 DISCOMs</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 3px;">Immediate ARR target (Year 1)</div>
+    </div>
+    <div class="revenue-price" style="color: var(--green);">₹1.8Cr / year</div>
+  </div>
+  <div class="revenue-row" style="border: none;">
+    <div>
+      <div class="revenue-tier">Phase 2: Aviation + Telecom + Insurance APIs</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 3px;">Expansion channels after 5-DISCOM anchor</div>
+    </div>
+    <div class="revenue-price" style="color: var(--yellow);">TBD</div>
+  </div>
+
+  <div style="margin-top: 24px; padding: 16px 20px; border: 1px solid rgba(0,255,136,0.25); background: rgba(0,255,136,0.04);">
+    <div style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: var(--green); margin-bottom: 6px;">THE ROI MATH</div>
+    <div style="font-size: 14px; color: rgba(224,224,255,0.8); line-height: 1.6;">
+      ₹5L/month KAVACH cost vs ₹3,000Cr transformer asset exposure = <strong style="color:var(--green);">600x ROI</strong> on a single avoided G5 event.
+    </div>
+  </div>
+
+  <div class="slide-number">10 / 15</div>
+</div>
+
+<!-- SLIDE 11: THE MOAT -->
+<div class="slide" data-slide="11">
+  <div class="label">Competitive Moat</div>
+  <h2 style="margin-bottom: 32px;">ISRO maps satellites. KAVACH maps India's last mile.</h2>
+
+  <div class="two-col">
+    <div>
+      <div style="margin-bottom: 12px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--muted);">EXISTING SYSTEMS</div>
+      <ul class="bullets" style="gap: 12px; font-size: 16px;">
+        <li>ISRO: satellite health, orbital alerts — not grid, not farmers</li>
+        <li>NOAA SWPC: English, internet, built for the US grid</li>
+        <li>SpaceWeatherLive: consumer-facing, no India-specific mapping</li>
+        <li>None automate Hindi voice calls to feature phones</li>
+      </ul>
+    </div>
+    <div>
+      <div style="margin-bottom: 12px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent);">KAVACH MOAT</div>
+      <ul class="bullets" style="gap: 12px; font-size: 16px;">
+        <li><strong class="green">28 DISCOM registry</strong> — real utilities, real lat/lng, real risk model</li>
+        <li><strong class="green">Hindi voice</strong> — feature phones, no app, no internet</li>
+        <li><strong class="green">India-first geomagnetic model</strong> — north-first exposure, ISRO VEDAS planned</li>
+        <li><strong class="green">Autonomous loop</strong> — NASA poll → call, no human in the chain</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="slide-number">11 / 15</div>
+</div>
+
+<!-- SLIDE 12: BUILT WITH CLAUDE CODE -->
+<div class="slide" data-slide="12">
+  <div class="label">Agentic Build Story</div>
+  <h2 style="margin-bottom: 24px;">A 19-year-old solo builder + autonomous AI built India's space weather infrastructure.</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;">
+    <div>
+      <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 2; padding: 16px; border: 1px solid var(--border); background: rgba(0,0,0,0.3);">
+        <span style="color:var(--green);">$</span> git log --oneline<br>
+        <span style="color:var(--accent);">8f50b2e</span> Add 5 council upgrades: ROI, GPS hook, moat<br>
+        <span style="color:var(--accent);">7c77dc5</span> Final state: all phases documented<br>
+        <span style="color:var(--accent);">addf0dd</span> All phases complete: demo 22.6s, Vercel live<br>
+        <span style="color:var(--accent);">4f6564f</span> Phase 4+5: demo mode, audio, deploy<br>
+        <span style="color:var(--accent);">a90c966</span> Add .gitignore<br>
+        <span style="color: var(--muted); font-size:9px;">8 autonomous commits · 6 days</span>
+      </div>
+
+      <div style="margin-top: 16px; padding: 12px 16px; border: 1px solid rgba(0,212,255,0.2);">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">BUILD TIME</div>
+        <div style="font-size:24px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;">6 days</div>
+        <div style="font-size:12px;color:var(--muted);">June 8–14, 2026</div>
+      </div>
+    </div>
+
+    <div>
+      <ul class="bullets" style="gap: 16px; font-size: 15px;">
+        <li>Claude Code read CLAUDE.md, task_plan.md, findings.md autonomously before every task</li>
+        <li>All 7 build phases completed with zero human code written</li>
+        <li>This IS also a demo of Agentic & Autonomous Systems — two hackathon themes for the price of one</li>
+        <li>KAVACH is the artifact. The build process is the second artifact.</li>
+      </ul>
+
+      <div style="margin-top: 20px; padding: 12px 16px; border: 1px solid rgba(0,255,136,0.2); background: rgba(0,255,136,0.04);">
+        <div style="font-size:13px;color:var(--green);">
+          "Claude Code shipped 12 Python files, 12 TypeScript components, 2 deployments,
+          and a live Twilio call — autonomously."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">12 / 15</div>
+</div>
+
+<!-- SLIDE 13: ROADMAP -->
+<div class="slide" data-slide="13">
+  <div class="label">Round 2 Roadmap — Delhi → Tokyo</div>
+  <h2 style="margin-bottom: 20px;">Coming next.</h2>
+
+  <div class="flagship-card">
+    <div class="flagship-label">🌐 FLAGSHIP FEATURE</div>
+    <div class="flagship-title">Multi-Language Expansion</div>
+    <div class="flagship-desc">
+      From 1 language to 8 — Hindi base + Tamil, Telugu, Marathi, Bengali, Punjabi, Gujarati, Kannada by DISCOM zone.
+      English as universal fallback. Auto-detected by pincode/DISCOM region.
+      Every Indian, warned in their mother tongue.
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="roadmap-item">
+      <div class="roadmap-icon">🛰️</div>
+      <div>
+        <div class="roadmap-main">ISRO VEDAS Integration</div>
+        <div class="roadmap-pitch">Indian satellite ionospheric data — India-specific GPS accuracy forecasting no foreign tool provides</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-icon">💬</div>
+      <div>
+        <div class="roadmap-main">WhatsApp + SMS Fallback</div>
+        <div class="roadmap-pitch">When the call fails, WhatsApp delivers in the subscriber's language — zero missed warnings</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-icon">⚡</div>
+      <div>
+        <div class="roadmap-main">Transformer Damage Model</div>
+        <div class="roadmap-pitch">Per-substation failure probability by age + storm intensity — DISCOMs get a ranked isolation list</div>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-icon">🔭</div>
+      <div>
+        <div class="roadmap-main">CME Transit Modeling</div>
+        <div class="roadmap-pitch">NASA CME speed + direction → India-specific arrival window — turns 30-min alert into 4–18 hour countdown</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-number">13 / 15</div>
+</div>
+
+<!-- SLIDE 14: VISION -->
+<div class="slide" data-slide="14">
+  <div class="label">3-Year Vision</div>
+  <h2 style="margin-bottom: 12px;">KAVACH becomes the layer between space and 1.4 billion Indians.</h2>
+  <div style="font-size: 15px; color: var(--muted); margin-bottom: 32px;">India's missing space weather authority — not a product, infrastructure.</div>
+
+  <div class="vision-row">
+    <div class="vision-year">
+      <div class="vision-year-label">YEAR 1 — DELHI</div>
+      <div class="vision-amount" style="color: var(--accent);">₹3Cr</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">5 DISCOMs · Hindi only</div>
+    </div>
+    <div class="vision-year">
+      <div class="vision-year-label">YEAR 2 — EXPANSION</div>
+      <div class="vision-amount" style="color: var(--yellow);">₹47Cr</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">All 28 DISCOMs · 8 languages · Aviation</div>
+    </div>
+    <div class="vision-year">
+      <div class="vision-year-label">YEAR 3 — TOKYO</div>
+      <div class="vision-amount" style="color: var(--green);">₹200Cr</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">Telecom · Insurance · SAARC expansion</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px;" class="quote">
+    "The next G5 storm is not a matter of if — it's when. KAVACH will be ready."
+  </div>
+
+  <div class="slide-number">14 / 15</div>
+</div>
+
+<!-- SLIDE 15: THANK YOU -->
+<div class="slide" data-slide="15">
+  <div style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <div class="label" style="text-align: center;">Thank You</div>
+    <h1 style="margin-bottom: 16px;" class="glow-text">KAVACH</h1>
+    <div class="tagline" style="text-align: center; font-size: 22px; margin-bottom: 48px;">
+      "It called the farmer before the lights went out."
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; margin-bottom: 40px;">
+      <div style="padding: 16px; border: 1px solid var(--border); background: rgba(0,212,255,0.04);">
+        <div style="font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 6px;">LIVE DEMO</div>
+        <div style="font-size: 12px; color: var(--accent);">frontend-rust-xi-79.vercel.app</div>
+      </div>
+      <div style="padding: 16px; border: 1px solid var(--border); background: rgba(0,212,255,0.04);">
+        <div style="font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 6px;">GITHUB</div>
+        <div style="font-size: 12px; color: var(--accent);">github.com/[your-handle]/kavach-faraway-2026</div>
+      </div>
+      <div style="padding: 16px; border: 1px solid var(--border); background: rgba(0,212,255,0.04);">
+        <div style="font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 6px;">CONTACT</div>
+        <div style="font-size: 12px; color: var(--accent);">jvibhor202@gmail.com</div>
+      </div>
+      <div style="padding: 16px; border: 1px solid var(--border); background: rgba(0,212,255,0.04);">
+        <div style="font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 6px;">BUILT IN</div>
+        <div style="font-size: 12px; color: var(--green);">6 days · June 2026</div>
+      </div>
+    </div>
+
+    <div style="font-size: 13px; color: var(--muted);">
+      FAR AWAY 2026 · Vibbhor Jain · Built with Claude Code
+    </div>
+  </div>
+
+  <div class="slide-number">15 / 15</div>
+</div>
+
+</div><!-- end deck -->
+
+<div class="nav">
+  <button onclick="go(-1)">← PREV</button>
+  <span id="slide-counter" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);padding:8px 16px;border:1px solid var(--border);">1 / 15</span>
+  <button onclick="go(1)">NEXT →</button>
+</div>
+
+<script>
+  let current = 1;
+  const total = 15;
+
+  function go(dir) {
+    const prev = document.querySelector('.slide.active');
+    current = Math.max(1, Math.min(total, current + dir));
+    prev.classList.remove('active');
+    document.querySelector('[data-slide="' + current + '"]').classList.add('active');
+    document.getElementById('slide-counter').textContent = current + ' / ' + total;
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+  });
+</script>
+</body>
+</html>

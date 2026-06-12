@@ -1,6 +1,4 @@
-"""
-Polls NOAA SWPC for real-time Kp-index every 5 minutes.
-"""
+# Polls NOAA SWPC for real-time Kp-index every 5 minutes.
 import httpx
 import logging
 import os

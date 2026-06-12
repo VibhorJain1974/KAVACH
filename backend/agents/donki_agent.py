@@ -1,7 +1,4 @@
-"""
-Polls NASA DONKI for new geomagnetic storm events every 15 minutes.
-On new red/yellow storms, triggers alert pipeline.
-"""
+# Polls NASA DONKI every 15 min. Triggers alert pipeline on new red/yellow storms.
 import logging
 from datetime import datetime, timedelta
 from services.nasa import fetch_gst_events, parse_gst_events, classify_severity
