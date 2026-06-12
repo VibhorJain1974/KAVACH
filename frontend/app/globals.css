@@ -105,6 +105,35 @@ body::before {
 .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { display: none !important; }
 .mapboxgl-canvas { border-radius: 1px; }
 
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(77,240,255,0.12);
+  gap: 2px;
+  flex-shrink: 0;
+}
+.tab-btn {
+  padding: 10px 20px;
+  font-family: 'Space Grotesk', var(--font-space-grotesk), sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: rgba(200,218,255,0.45);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.18s, border-color 0.18s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: rgba(200,218,255,0.8); }
+.tab-btn.active {
+  color: var(--plasma);
+  border-bottom-color: var(--plasma);
+  text-shadow: 0 0 12px rgba(77,240,255,0.4);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
