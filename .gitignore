@@ -33,3 +33,25 @@ backend/verify_services.py
 .idea/
 *.swp
 
+# Internal build tooling — not for submission
+CLAUDE.md
+BUILD_PROMPT.md
+.claude/
+.playwright-mcp/
+.firecrawl/
+
+# Office lock files
+~$*.pptx
+~$*.docx
+
+# Intermediate renders and debug screenshots
+docs/renders/
+docs/assets/
+kavach-*.png
+check-*.png
+landing-*.png
+landing-*.png
+dashboard-*.png
+demo-mid.png
+aurora-tab-check.png
+

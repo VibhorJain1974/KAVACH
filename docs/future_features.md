@@ -107,4 +107,4 @@ KAVACH Module 1 → DRISHTI (full space weather intelligence platform for South 
 
 ---
 
-*Built at FAR AWAY 2026 by Vibbhor Jain + Claude Code. June 14, 2026.*
+*Built at FAR AWAY 2026 by Vibbhor Jain. June 14, 2026.*

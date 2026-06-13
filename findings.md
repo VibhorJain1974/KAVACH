@@ -1,5 +1,5 @@
 # KAVACH — Technical Findings & API Confirmations
-**Updated by:** Claude Code (autonomous) — 2026-06-12 (FRONTEND REBUILD)
+**Updated by:** Vibbhor Jain — 2026-06-12 (FRONTEND REBUILD)
 
 ---
 
@@ -292,3 +292,32 @@ All 7 finalization steps complete. Codebase reads like a focused solo dev under 
 - Frontend: https://frontend-rust-xi-79.vercel.app ✅ LIVE
 - Backend: https://powerful-respect-production-482e.up.railway.app ✅ LIVE (with all 6 routers)
 - All 4 tabs functional, 0 console errors, demo completes in ~22s
+
+---
+
+## Session 3 — PPTX Polish (2026-06-13)
+
+### Phase 1 Fixes (v5 → v6) — patch_phase1.py
+| Fix | Slides | Result |
+|-----|--------|--------|
+| Rs. → ₹ | 2, 10 | 6 run replacements |
+| Arrow boxes → → | 3, 6 (11 boxes) | word_wrap=False, Nirmala UI |
+| Inline -> → → | 5, 7, 10 | 3 slides updated |
+| Slide 5 badge overlap | 5 | 36 shapes moved; badge gap confirmed >0.18" |
+| Slide 6 duplicate card | 6 | ids 40-43 removed |
+| Slide 9 bilingual Hindi | 9 | 6 Devanagari/English line-pairs, Nirmala UI |
+
+### Phase 2 Fix (v6 → v7) — patch_phase2.py: Slide 9 card overflow
+Slides 4 and 5 visually confirmed clean (no overflow) — untouched.
+
+| Card | rect.top before→after | rect.h before→after | body.top before→after | body.h before→after |
+|------|----------------------|--------------------|-----------------------|--------------------|
+| 0-100 Space Weather Score | 2.00→2.00 | 0.86→0.90 | 2.52→2.42 | 0.24→0.42 |
+| GPS Accuracy Forecast | 2.98→3.00 | 0.86→0.90 | 3.50→3.42 | 0.24→0.42 |
+| GRID DISCOM Risk Zones | 3.96→4.00 | 0.86→0.90 | 4.48→4.42 | 0.24→0.42 |
+| AUR Aurora Visibility | 4.94→5.00 | 0.86→0.90 | 5.46→5.42 | 0.24→0.42 |
+| LANG Bilingual Brief | 5.92→6.00 | 0.86→0.90 | 6.44→6.42 | 0.24→0.42 |
+
+Result: last card bottom 6.90", footer at 7.12" — 0.22" clearance. All 5 cards: 2-line body inside with padding. Slide 5 badge row unaffected.
+
+Output: `docs/KAVACH_FARAWAY2026_FINAL_v7.pptx`

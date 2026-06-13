@@ -194,14 +194,14 @@ def section_title(s, title, sub=None):
     if sub:
         tb(s, 0.5, 1.38, 10.5, 0.45, sub, sz=13, col=MUTED, italic=True)
 
-def feature_row(s, l, t, w, h, code, title, desc, col=ACCENT):
+def feature_row(s, l, t, w, h, code, title, desc, col=ACCENT, body_off=0.52):
     card = rrect(s, l, t, w, h, bg=CARD2, bc=BORDER)
     add_shadow(card)
     tb(s, l + 0.15, t + 0.1, 1.05, h - 0.18,
        code, sz=15, bold=True, col=col, mono=True, align=PP_ALIGN.CENTER)
     rect(s, l + 1.28, t + 0.14, 0.02, h - 0.26, bg=BORDER)
     tb(s, l + 1.38, t + 0.08, w - 1.55, 0.44, title, sz=13, bold=True, col=col)
-    tb(s, l + 1.38, t + 0.52, w - 1.55, h - 0.62, desc, sz=12, col=WHITE)
+    tb(s, l + 1.38, t + body_off, w - 1.55, h - body_off - 0.10, desc, sz=12, col=WHITE)
 
 
 # ====================================================================
@@ -660,8 +660,8 @@ for i, (code, title, desc, col) in enumerate([
     ("AUR",   "Aurora Visibility",    "6 Himalayan locations\nKp-based prediction nightly",       GREEN),
     ("LANG",  "Bilingual Brief",      "Hindi for farmers\nEnglish for DISCOM operators",         WHITE),
 ]):
-    y = 2.0 + i * 0.98
-    feature_row(s, 0.42, y, 6.12, 0.86, code, title, desc, col)
+    y = 2.0 + i * 1.00
+    feature_row(s, 0.42, y, 6.12, 0.90, code, title, desc, col, body_off=0.42)
 
 # Right: phone mockup card
 phone_l, phone_t, phone_w, phone_h = 6.82, 0.62, 6.3, 6.62

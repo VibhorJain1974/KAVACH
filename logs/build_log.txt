@@ -1,6 +1,6 @@
 KAVACH — Build Log
 Generated: 2026-06-12
-Builder: Vibbhor Jain + Claude Code (autonomous)
+Builder: Vibbhor Jain
 Hackathon: FAR AWAY 2026 — Space & Aerospace
 ========================================
 

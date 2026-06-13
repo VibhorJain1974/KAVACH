@@ -48,7 +48,7 @@
 ## PRESENTATION
 
 - [ ] docs/KAVACH_FARAWAY2026.pptx generated and reviewed (or HTML slide deck)
-- [ ] Slide 1: Title, tagline, name, "Built with Claude Code"
+- [ ] Slide 1: Title, tagline, name, team
 - [ ] Slide 2: May 2024 hook, Hanle aurora photo credited (Dorje Angchuk)
 - [ ] Slide 3: Problem — 1.4B people, 28 DISCOMs, no warning system
 - [ ] Slide 12: Agentic build story (commit log screenshot)

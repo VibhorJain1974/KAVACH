@@ -115,7 +115,7 @@
 > **KAVACH**  
 > "It called the farmer before the lights went out."  
 > github.com/vibhorjain/kavach-faraway-2026  
-> FAR AWAY 2026 · Built by Vibbhor Jain + Claude Code
+> FAR AWAY 2026 · Built by Vibbhor Jain
 
 ---
 

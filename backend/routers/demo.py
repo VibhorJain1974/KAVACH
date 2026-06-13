@@ -174,7 +174,6 @@ async def _replay_generator(phones: list[str] = None, speed: float = 1.0):
                 "roi_x": "600x",
             },
             "moat": "ISRO maps satellites. KAVACH maps India's last mile.",
-            "built_with": "Claude Code — autonomous build in 6 days",
         },
     })
 
