@@ -37,8 +37,10 @@ backend/verify_services.py
 CLAUDE.md
 BUILD_PROMPT.md
 .claude/
+frontend/.claude/
 .playwright-mcp/
 .firecrawl/
+blockers.md
 
 # Office lock files
 ~$*.pptx
@@ -47,9 +49,9 @@ BUILD_PROMPT.md
 # Intermediate renders and debug screenshots
 docs/renders/
 docs/assets/
+docs/*_v6.pptx
 kavach-*.png
 check-*.png
-landing-*.png
 landing-*.png
 dashboard-*.png
 demo-mid.png

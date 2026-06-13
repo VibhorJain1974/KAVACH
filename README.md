@@ -46,6 +46,22 @@ Click **REPLAY STORM** to relive the May 2024 G5 event — map goes red, Hindi c
 
 ---
 
+## Screenshots
+
+| Command Center (normal state) | Demo — map goes red (Kp=9.0) |
+|---|---|
+| ![Command Center](docs/screenshots/01_home.png) | ![Storm Active](docs/screenshots/06_demo_red.png) |
+
+| Aurora Predictor (map markers) | Daily Shield — Hindi briefing |
+|---|---|
+| ![Aurora Tab](docs/screenshots/02_aurora.png) | ![Daily Shield](docs/screenshots/03_shield.png) |
+
+| Storm Memory — 4 historical storms | Demo complete — 28 DISCOMs + Twilio call |
+|---|---|
+| ![Storm Memory](docs/screenshots/04_memory.png) | ![Demo Complete](docs/screenshots/07_demo_complete.png) |
+
+---
+
 ## Architecture
 
 ```mermaid
