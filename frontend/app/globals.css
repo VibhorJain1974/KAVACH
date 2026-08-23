@@ -96,10 +96,23 @@ body::before {
   75%     { transform: rotate(-6deg); }
 }
 
+@keyframes signal-lock {
+  0%   { box-shadow: 0 0 0 0 rgba(255,68,68,0); transform: scale(1); }
+  30%  { box-shadow: 0 0 0 3px rgba(255,68,68,0.4); transform: scale(1.015); }
+  100% { box-shadow: 0 0 0 0 rgba(255,68,68,0); transform: scale(1); }
+}
+@keyframes confidence-reveal {
+  0%   { opacity: 0; transform: scale(0.85); filter: blur(2px); }
+  60%  { opacity: 1; transform: scale(1.06); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
 .animate-pulse-danger { animation: pulse-danger 2s ease-in-out infinite; }
 .animate-slide-up { animation: slide-up 0.35s ease-out forwards; }
 .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
 .animate-blink { animation: blink 1s step-end infinite; }
+.animate-signal-lock { animation: signal-lock 0.5s ease-out; }
+.animate-confidence-reveal { animation: confidence-reveal 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
 /* Mapbox */
 .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { display: none !important; }

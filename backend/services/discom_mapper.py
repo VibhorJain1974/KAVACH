@@ -3,6 +3,63 @@ Maps storm severity to affected Indian DISCOM grid zones.
 Higher Kp = more zones affected, starting from north (most exposed).
 """
 
+# Predominant official/spoken language per state, used to pick the default
+# alert language for a DISCOM zone. Derived from each state's official
+# language rather than assigned arbitrarily.
+#
+# Only languages KAVACH can actually speak are used here. States whose main
+# language KAVACH does not yet support (e.g. Odia, Assamese, Kashmiri) fall
+# back to Hindi, which is the honest behaviour — better a language many
+# recipients understand than silence or a fake voice.
+STATE_LANGUAGE = {
+    "Punjab": "punjabi",
+    "Tamil Nadu": "tamil",
+    "Telangana": "telugu",
+    "Andhra Pradesh": "telugu",
+    "Maharashtra": "marathi",
+    "West Bengal": "bengali",
+    "Gujarat": "gujarati",
+    "Karnataka": "kannada",
+    # Hindi-belt and unsupported-language states -> Hindi (explicit, not accidental)
+    "Uttar Pradesh": "hindi",
+    "Haryana": "hindi",
+    "Himachal Pradesh": "hindi",
+    "Jammu & Kashmir": "hindi",
+    "Rajasthan": "hindi",
+    "Madhya Pradesh": "hindi",
+    "Chhattisgarh": "hindi",
+    "Jharkhand": "hindi",
+    "Bihar": "hindi",
+    "Delhi": "hindi",
+    "Uttarakhand": "hindi",
+    # No KAVACH voice for Odia / Assamese / Malayalam yet -> Hindi fallback
+    "Odisha": "hindi",
+    "Assam": "hindi",
+    "Kerala": "hindi",
+}
+
+DEFAULT_ZONE_LANGUAGE = "hindi"
+
+
+def language_for_state(state: str) -> str:
+    return STATE_LANGUAGE.get(state, DEFAULT_ZONE_LANGUAGE)
+
+
+def get_zone_languages() -> list[dict]:
+    """Per-DISCOM default alert language. Exposed via the API so the mapping is
+    inspectable; see findings.md for why the autonomous replay path does not
+    consume this yet."""
+    return [
+        {
+            "id": d["id"],
+            "name": d["name"],
+            "state": d["state"],
+            "region": d["region"],
+            "default_language": language_for_state(d["state"]),
+        }
+        for d in DISCOMS
+    ]
+
 DISCOMS = [
     # Northern Region (most vulnerable — closest to magnetic pole)
     {"id": "PVVNL", "name": "Paschimanchal Vidyut Vitran Nigam", "state": "Uttar Pradesh", "region": "north", "lat": 28.67, "lng": 77.22},

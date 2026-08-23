@@ -1,0 +1,8 @@
+{
+  "type": "Timeseries",
+  "metadata": {"intermagnet": {"imo": {"iaga_code": "BOU"}}},
+  "times": ["2024-05-10T16:00:00Z", "2024-05-10T16:30:00Z", "2024-05-10T17:00:00Z"],
+  "values": [
+    {"id": "H", "values": [21050.2, 20890.4, 20512.7]}
+  ]
+}

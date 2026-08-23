@@ -9,9 +9,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import storms, alerts, demo, shield, aurora, memory
+from routers import storms, alerts, demo, shield, aurora, memory, fusion, operator, ionosphere, imagery
 from agents.donki_agent import poll_donki
-from agents.noaa_agent import fetch_current_kp
+from agents.alert_agent import check_kp_threshold_and_alert, DEMO_PHONE
+from services.db import get_client
 
 app = FastAPI(title="KAVACH API", version="1.0.0", description="Autonomous space weather shield for India")
 
@@ -28,14 +29,25 @@ app.include_router(demo.router)
 app.include_router(shield.router)
 app.include_router(aurora.router)
 app.include_router(memory.router)
+app.include_router(fusion.router)
+app.include_router(operator.router)
+app.include_router(ionosphere.router)
+app.include_router(imagery.router)
 
 scheduler = AsyncIOScheduler()
 
 @app.on_event("startup")
 async def startup():
     poll_interval = int(os.getenv("POLL_INTERVAL_MINUTES", 15))
-    scheduler.add_job(poll_donki, "interval", minutes=poll_interval, id="donki_poll")
-    scheduler.add_job(fetch_current_kp, "interval", minutes=5, id="noaa_poll")
+    supabase = get_client()
+    scheduler.add_job(
+        poll_donki, "interval", minutes=poll_interval, id="donki_poll",
+        kwargs={"supabase_client": supabase},
+    )
+    scheduler.add_job(
+        check_kp_threshold_and_alert, "interval", minutes=5, id="noaa_poll",
+        kwargs={"supabase_client": supabase, "call_phone": DEMO_PHONE},
+    )
     scheduler.start()
     print("KAVACH backend started - autonomous monitoring active")
 
@@ -49,7 +61,7 @@ async def root():
         "service": "KAVACH",
         "tagline": "It called the farmer before the lights went out",
         "status": "operational",
-        "endpoints": ["/storm/current", "/storm/may2024", "/alerts/discoms", "/demo/replay", "/demo/trigger-call"],
+        "endpoints": ["/storm/current", "/storm/live-now", "/storm/may2024", "/alerts/discoms", "/demo/replay", "/demo/trigger-call", "/fusion/status"],
     }
 
 @app.get("/health")

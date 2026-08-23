@@ -3,18 +3,36 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import KpGauge from './KpGauge';
 import AlertFeed from './AlertFeed';
-import DemoPanel from './DemoPanel';
 import IndiaMap from './IndiaMap';
 import StatusBar from './StatusBar';
 import AudioFallback, { type AudioFallbackRef } from './AudioFallback';
 import AuroraTab from './AuroraTab';
 import DailyShieldTab from './DailyShieldTab';
 import MemoryTab from './MemoryTab';
+import FusionPanel from './FusionPanel';
+import IonosphereWitness from './IonosphereWitness';
+import GlobalPropagationMap from './GlobalPropagationMap';
+import LiveNowStrip from './LiveNowStrip';
 import type { DiscomZone, AlertEvent, DemoStep } from '@/lib/types';
 
 // SolarHeader uses Three.js — dynamic import prevents SSR issues
 import dynamic from 'next/dynamic';
 const SolarHeader = dynamic(() => import('./SolarHeader'), { ssr: false });
+
+// DemoPanel (REPLAY STORM) and LiveCallPanel (CALL THIS PHONE) render their
+// buttons unconditionally on mount, with no async data-load gating them —
+// unlike FusionPanel/IonosphereWitness/IndiaMap's INSAT toggle, which all
+// return null until an effect-driven fetch resolves and so can never exist
+// in the DOM before hydration has already happened. Server-rendering these
+// two normally means their button markup ships before React has attached
+// real onClick listeners to it — a click that lands in that window is a
+// real click on a real, visible button with nothing listening yet, silently
+// swallowed. ssr:false guarantees the button can't exist until it's already
+// interactive, at the cost of a brief pop-in instead of being present on
+// first paint. Scoped to just these two — everything else on the page
+// either loads fine already or isn't part of the demo-critical path.
+const DemoPanel = dynamic(() => import('./DemoPanel'), { ssr: false });
+const LiveCallPanel = dynamic(() => import('./LiveCallPanel'), { ssr: false });
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
@@ -50,6 +68,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('command');
   const [shieldScore, setShieldScore] = useState<number | null>(null);
   const [auroraMarkers, setAuroraMarkers] = useState<{ name: string; lat: number; lng: number; probability_pct: number; predicted_visible: boolean }[]>([]);
+  const [globalMapOpen, setGlobalMapOpen] = useState(false);
   const audioRef = useRef<AudioFallbackRef>(null);
 
   useEffect(() => {
@@ -209,7 +228,8 @@ export default function Dashboard() {
         {activeTab === 'command' && (
           <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 320px' }}>
             <div className="relative overflow-hidden">
-              <IndiaMap zones={zones} severity={severity} />
+              <LiveNowStrip backendUrl={BACKEND} />
+              <IndiaMap zones={zones} severity={severity} backendUrl={BACKEND} />
               <StatusBar message={statusMessage} severity={severity} demoRunning={demoRunning} />
             </div>
             <div className="flex flex-col overflow-hidden" style={{ borderLeft: '1px solid rgba(0,212,255,0.1)' }}>
@@ -225,6 +245,9 @@ export default function Dashboard() {
                   backendUrl={BACKEND}
                 />
                 <AlertFeed alerts={alerts} />
+                <FusionPanel backendUrl={BACKEND} demoActive={demoRunning} />
+                <IonosphereWitness backendUrl={BACKEND} demoActive={demoRunning} onExpand={() => setGlobalMapOpen(true)} />
+                <LiveCallPanel backendUrl={BACKEND} />
               </div>
             </div>
           </div>
@@ -234,7 +257,7 @@ export default function Dashboard() {
         {activeTab === 'aurora' && (
           <div style={{ height: '100%', display: 'grid', gridTemplateColumns: '1fr 400px' }}>
             <div className="relative overflow-hidden">
-              <IndiaMap zones={zones} severity={severity} auroraMarkers={auroraMarkers} />
+              <IndiaMap zones={zones} severity={severity} auroraMarkers={auroraMarkers} backendUrl={BACKEND} />
             </div>
             <div style={{ borderLeft: '1px solid rgba(0,212,255,0.1)', overflowY: 'auto' }}>
               <AuroraTab kp={currentKp} backendUrl={BACKEND} />
@@ -260,6 +283,14 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Global Propagation Map — full-screen hero view, triggered from the
+          Ionosphere Witness panel's "GLOBAL VIEW" control */}
+      {globalMapOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#020408' }} className="animate-slide-up">
+          <GlobalPropagationMap backendUrl={BACKEND} onClose={() => setGlobalMapOpen(false)} />
+        </div>
+      )}
     </div>
   );
 }

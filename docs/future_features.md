@@ -33,6 +33,22 @@
 - Alert format: SIGMET-style machine-readable aviation warnings
 - Indian airspace: 6 FIR (Flight Information Regions)
 
+### ISRO VEDAS — ROADMAP ONLY (verified 2026-07-19, not integrated)
+
+**Status: blocked upstream, not built. Deliberately not faked.**
+
+README's Round 2 list included "ISRO VEDAS integration — ionospheric scintillation data." Before writing any integration code this was checked directly against the live VEDAS API Centre (https://vedas.sac.gov.in/vconsole/).
+
+What VEDAS actually publishes:
+- **WMS API** — False/True Colour Composite imagery (AWiFS/Resourcesat, Sentinel-2)
+- **Temporal API** — NDVI vegetation time-series for points/polygons
+
+Both are Earth-observation products, and both require registration and an API key.
+
+**There is no ionospheric, scintillation, TEC, geomagnetic, or space-weather endpoint.** The scintillation data KAVACH would want does not exist as a public VEDAS API.
+
+Accordingly VEDAS is carried as an honest **mission acknowledgment / future integration target** in Constellation Fusion (same treatment as JAXA Hinode and ISRO Aditya-L1), never as a live data source. Revisit if SAC publishes an ionospheric product.
+
 ### ISRO MOSDAC Deep Integration
 - Real-time data feed from MOSDAC (Meteorological & Oceanographic Satellite Data Archival Centre)
 - INSAT-3D/3DR solar imagery overlay on KAVACH map

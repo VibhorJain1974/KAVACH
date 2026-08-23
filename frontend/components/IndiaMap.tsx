@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { DiscomZone } from '@/lib/types';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -33,12 +34,25 @@ interface TooltipState {
   zone: DiscomZone | null;
 }
 
-export default function IndiaMap({ zones, auroraMarkers = [] }: { zones: DiscomZone[]; severity: string; auroraMarkers?: AuroraMarker[] }) {
+interface InsatImagery {
+  available: boolean;
+  satellite?: string;
+  product?: string;
+  time_utc?: string;
+  image_url?: string;
+  bounds?: [number, number][];
+  legend?: string;
+  attribution?: string;
+}
+
+export default function IndiaMap({ zones, auroraMarkers = [], backendUrl }: { zones: DiscomZone[]; severity: string; auroraMarkers?: AuroraMarker[]; backendUrl?: string }) {
   const mapContainer = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
   const [tooltip, setTooltip] = useState<TooltipState>({ x: 0, y: 0, zone: null });
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [insat, setInsat] = useState<InsatImagery | null>(null);
+  const [insatOn, setInsatOn] = useState(false);
 
   // Initialize map
   useEffect(() => {
@@ -54,6 +68,7 @@ export default function IndiaMap({ zones, auroraMarkers = [] }: { zones: DiscomZ
       map = new mapboxgl.Map({
         container: mapContainer.current!,
         style: 'mapbox://styles/mapbox/dark-v11',
+        projection: 'mercator',  // flat India map; also lets the INSAT image overlay composite reliably
         center: [80.5, 22.5],
         zoom: 4.8,
         minZoom: 3.5,
@@ -212,6 +227,49 @@ export default function IndiaMap({ zones, auroraMarkers = [] }: { zones: DiscomZ
     if (source) source.setData(buildAuroraGeoJSON(auroraMarkers));
   }, [auroraMarkers, mapLoaded]);
 
+  // Fetch the latest INSAT-3S scene descriptor (real MOSDAC ncWMS). Fallback-safe:
+  // available:false just means the overlay stays hidden; the map is unaffected.
+  // image_url is a path on OUR backend (proxied — see routers/imagery.py), not a
+  // direct MOSDAC URL: verified live that MOSDAC only sends CORS headers for
+  // localhost/its own origin, which silently blocks Mapbox's WebGL texture upload
+  // from a real deployed site even though the plain HTTP fetch succeeds.
+  useEffect(() => {
+    if (!backendUrl) return;
+    let cancelled = false;
+    fetch(`${backendUrl}/imagery/insat-latest`)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('insat'))))
+      .then(d => {
+        if (!cancelled && d?.available && d.image_url && d.bounds) {
+          setInsat({ ...d, image_url: `${backendUrl}${d.image_url}` });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [backendUrl]);
+
+  // Add the INSAT scene as a single georeferenced `image` source, tucked UNDER the
+  // DISCOM circles so the grid stays readable. An image source (vs per-tile WMS) is
+  // projection-agnostic and renders reliably under mapbox-gl v3's globe default.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!mapLoaded || !map || !insat?.image_url || !insat?.bounds || map.getSource('insat')) return;
+    map.addSource('insat', { type: 'image', url: insat.image_url, coordinates: insat.bounds });
+    map.addLayer({
+      id: 'insat-raster',
+      type: 'raster',
+      source: 'insat',
+      layout: { visibility: insatOn ? 'visible' : 'none' },
+      paint: { 'raster-opacity': 0.72, 'raster-fade-duration': 300 },
+    }, 'discom-fill');
+  }, [insat, mapLoaded, insatOn]);
+
+  // Toggle overlay visibility.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.getLayer?.('insat-raster')) return;
+    map.setLayoutProperty('insat-raster', 'visibility', insatOn ? 'visible' : 'none');
+  }, [insatOn]);
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
@@ -231,6 +289,41 @@ export default function IndiaMap({ zones, auroraMarkers = [] }: { zones: DiscomZ
       }}>
         INDIA — 28 DISCOM ZONES
       </div>
+
+      {/* INSAT-3S imagery toggle — real MOSDAC near-real-time layer */}
+      {insat?.available && (
+        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 6, textAlign: 'right' }}>
+          <button
+            onClick={() => setInsatOn(v => !v)}
+            style={{
+              fontSize: 9, letterSpacing: '0.1em', padding: '6px 10px', cursor: 'pointer',
+              background: insatOn ? 'rgba(255,45,74,0.15)' : 'rgba(5,13,24,0.8)',
+              border: `1px solid ${insatOn ? 'rgba(255,45,74,0.5)' : 'rgba(77,240,255,0.2)'}`,
+              color: insatOn ? 'var(--aurora-red)' : 'rgba(77,240,255,0.7)',
+              fontFamily: 'DM Mono, monospace', backdropFilter: 'blur(8px)',
+            }}
+          >
+            {insatOn ? '● INSAT-3S CLOUDS' : '○ INSAT-3S CLOUDS'}
+          </button>
+          {insatOn && (
+            <div style={{
+              marginTop: 6, maxWidth: 230, padding: '6px 9px',
+              background: 'rgba(5,13,24,0.82)', border: '1px solid rgba(77,240,255,0.12)',
+              backdropFilter: 'blur(8px)', textAlign: 'left',
+            }}>
+              <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace' }}>
+                {insat.product} · {insat.time_utc?.replace('T', ' ').replace('Z', ' UTC')}
+              </div>
+              <div style={{ fontSize: 7.5, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.5 }}>
+                {insat.legend}
+              </div>
+              <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.3)', marginTop: 3, lineHeight: 1.4 }}>
+                {insat.attribution}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Legend */}
       <div style={{

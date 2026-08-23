@@ -1,0 +1,5 @@
+[
+  {"time_tag": "2024-05-10T16:00:00Z", "satellite": 16, "flux": 4.2e-05, "energy": "0.1-0.8nm"},
+  {"time_tag": "2024-05-10T16:30:00Z", "satellite": 16, "flux": 6.8e-05, "energy": "0.1-0.8nm"},
+  {"time_tag": "2024-05-10T17:00:00Z", "satellite": 16, "flux": 1.1e-04, "energy": "0.1-0.8nm"}
+]

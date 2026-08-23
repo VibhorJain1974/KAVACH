@@ -103,3 +103,16 @@
 - 2026-06-08: Phase 6 (partial) - Presentation script written
 - 2026-06-10: Phase 7 - v2 features (Aurora/Shield/Memory), UI rebuild, Twilio hardened
 - 2026-06-13: Phase 8 - all bugs fixed, E2E demo tested, docs updated, SUBMISSION READY
+- 2026-07-20: Deploy discipline fix - a whole session's frontend work (IonosphereWitness,
+  FusionPanel kill-mode, IndiaMap INSAT overlay) was committed to git but never reached
+  production because only the BACKEND was redeployed (Railway) in the following session.
+  QA caught it live; root-caused via `vercel --prod` history, not assumed.
+
+## PROCESS RULE — deploy BOTH sides, always verify which
+Backend (Railway) and frontend (Vercel) deploy independently — redeploying one does
+NOT redeploy the other. Any session that changes frontend code (frontend/**) MUST run
+`cd frontend && vercel --prod` before claiming the feature is "deployed" or "live".
+A backend redeploy alone is never sufficient evidence that frontend changes shipped.
+Before writing "deployed" in findings.md, confirm which deploy commands actually ran
+this session (check command history, not memory) — do not assume a prior session's
+deploy still covers unreleased commits made since.

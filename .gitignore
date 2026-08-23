@@ -57,3 +57,10 @@ dashboard-*.png
 demo-mid.png
 aurora-tab-check.png
 
+
+# Runtime API cache (ephemeral live responses — fixtures are the tracked fallback)
+backend/data/cache/
+
+# Tool caches
+.claude-flow/
+frontend/.claude-flow/

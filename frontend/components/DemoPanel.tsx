@@ -36,10 +36,21 @@ export default function DemoPanel({
 
   useEffect(() => {
     if (!callSid || recordingUrl) return;
-    // Start polling 10s after call placed (recording takes a moment to process)
+    // The backend only returns ready=true once Twilio reports the recording as
+    // status='completed' — while the call is still live it sits at 'processing'
+    // and we must keep waiting. Measured worst case on a real call: ~30s from
+    // call placement to a genuinely playable recording. Poll every 5s for up to
+    // 3 minutes, then give up visibly rather than spinning forever.
+    const MAX_POLL_MS = 180_000;
+    const startedAt = Date.now();
     const startPoll = setTimeout(() => {
       setRecordingPolling(true);
       pollRef.current = setInterval(async () => {
+        if (Date.now() - startedAt > MAX_POLL_MS) {
+          setRecordingPolling(false);
+          if (pollRef.current) clearInterval(pollRef.current);
+          return;
+        }
         try {
           const r = await fetch(`${backendUrl}/demo/recording?call_sid=${callSid}`);
           const data = await r.json();
@@ -51,8 +62,8 @@ export default function DemoPanel({
             if (pollRef.current) clearInterval(pollRef.current);
           }
         } catch {}
-      }, 8000);
-    }, 10000);
+      }, 5000);
+    }, 8000);
     return () => {
       clearTimeout(startPoll);
       if (pollRef.current) clearInterval(pollRef.current);
