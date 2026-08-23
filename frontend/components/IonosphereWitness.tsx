@@ -108,23 +108,9 @@ export default function IonosphereWitness({ backendUrl, demoActive, onExpand }: 
         <span style={{ fontSize: 10, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.4)' }}>
           IONOSPHERE WITNESS
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {onExpand && (
-            <button
-              onClick={onExpand}
-              style={{
-                fontSize: 8, letterSpacing: '0.08em', padding: '2px 7px', cursor: 'pointer',
-                background: 'rgba(77,240,255,0.08)', border: '1px solid rgba(77,240,255,0.25)',
-                color: 'rgba(77,240,255,0.85)', borderRadius: 1, fontFamily: 'DM Mono, monospace',
-              }}
-            >
-              ⛶ GLOBAL VIEW
-            </button>
-          )}
-          <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em' }}>
-            HamSCI · WSPR
-          </span>
-        </div>
+        <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em' }}>
+          HamSCI · WSPR
+        </span>
       </div>
 
       {/* LIVE: the sky measured from the ground, right now */}
@@ -156,6 +142,45 @@ export default function IonosphereWitness({ backendUrl, demoActive, onExpand }: 
                   : <span style={{ color: 'var(--aurora-green)' }}>nominal (no propagation collapse)</span>}</>
               : 'baseline unavailable'}
           </div>
+
+          {/* The signature moment's invitation — real live signal count as its
+              own copy, not decoration. Sized to match REPLAY STORM's visual
+              weight rather than reading as a secondary utility toggle. */}
+          {onExpand && (
+            <button
+              onClick={onExpand}
+              style={{
+                width: '100%', marginTop: 10, padding: '10px 12px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                background: 'rgba(77,240,255,0.06)', border: '1px solid rgba(77,240,255,0.3)',
+                borderRadius: 1, cursor: 'pointer', transition: 'background 0.18s, border-color 0.18s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(77,240,255,0.12)';
+                e.currentTarget.style.borderColor = 'rgba(77,240,255,0.55)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(77,240,255,0.06)';
+                e.currentTarget.style.borderColor = 'rgba(77,240,255,0.3)';
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
+                  background: 'var(--plasma)', boxShadow: '0 0 6px var(--plasma)',
+                }} />
+                <span style={{
+                  fontSize: 11, fontWeight: 600, letterSpacing: '0.02em', color: 'var(--plasma)',
+                  fontFamily: 'Space Grotesk, sans-serif', lineHeight: 1.3,
+                }}>
+                  {live.spot_count_1h.toLocaleString()} signals worldwide
+                </span>
+              </span>
+              <span style={{ fontSize: 9, letterSpacing: '0.08em', color: 'rgba(77,240,255,0.65)', flexShrink: 0 }}>
+                ⛶ OPEN MAP
+              </span>
+            </button>
+          )}
         </div>
       )}
 

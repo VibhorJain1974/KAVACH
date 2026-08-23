@@ -81,13 +81,23 @@ export default function LiveCallPanel({ backendUrl }: { backendUrl: string }) {
           value={language}
           onChange={e => { setLanguage(e.target.value); if (state !== 'idle') setState('idle'); }}
           style={{
-            background: 'rgba(255,255,255,0.03)',
+            background: '#0a1628',
             border: '1px solid rgba(255,255,255,0.1)',
             color: '#fff', fontSize: 11, padding: '7px 8px',
             fontFamily: 'DM Mono, monospace', borderRadius: 1,
           }}
         >
-          {LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+          {/* The closed box above uses a translucent background, which is fine
+              over the dark panel. The native OPEN dropdown list ignores that
+              transparency and renders on the browser's own (usually white)
+              popup surface while still inheriting the white text color —
+              invisible until hovered. Options need an explicit opaque
+              background so the list itself is legible, not just the closed box. */}
+          {LANGUAGES.map(l => (
+            <option key={l.value} value={l.value} style={{ background: '#0a1628', color: '#fff' }}>
+              {l.label}
+            </option>
+          ))}
         </select>
       </div>
 

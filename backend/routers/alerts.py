@@ -1,7 +1,9 @@
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, HTTPException
 from models.schemas import CallRequest
 from services.twilio_caller import make_alert_call, get_call_status
 from services.discom_mapper import get_all_discoms, map_storm_to_discoms, get_zone_languages
+from services.db import get_client
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -40,3 +42,37 @@ async def check_call(call_sid: str):
         return get_call_status(call_sid)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/delivery-incomplete-recent")
+async def delivery_incomplete_recent(since_minutes: int = 10):
+    """Public, read-only feed for the Command Center's transparency banner
+    (B8, 2026-08-22): recent delivery_incomplete voice-call rows and their
+    linked SMS-recovery rows from alert_log.
+
+    No operator key required — this only ever exposes what alert_log already
+    stores for every voice call (phone_masked, never a raw number; see
+    services/db.py mask_phone()), the same trust boundary as the rest of the
+    public dashboard's zone/summary data.
+    """
+    client = get_client()
+    if client is None:
+        return []
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=since_minutes)).isoformat()
+    try:
+        rows = (
+            client.table("alert_log")
+            .select("*")
+            .gte("created_at", cutoff)
+            .order("created_at", desc=True)
+            .limit(20)
+            .execute()
+            .data
+        ) or []
+    except Exception:
+        return []
+    return [
+        r for r in rows
+        if r.get("call_status") == "delivery_incomplete"
+        or (r.get("alert_type") == "sms_fallback" and "delivery_incomplete" in (r.get("message") or ""))
+    ]

@@ -96,6 +96,53 @@ export default function Dashboard() {
       .catch(() => { setShieldScore(95); });
   }, []);
 
+  // B8 (2026-08-22): poll for delivery_incomplete voice-call detections and
+  // surface them in the existing alert feed as a plain warning banner. This
+  // is deliberately decoupled from the REPLAY STORM SSE stream above — that
+  // stream finishes in ~15s, well before a placed call's outcome (20-36s)
+  // and its SMS recovery can be classified, so a live event can't be pushed
+  // through it. Polling a small read-only endpoint and reusing AlertFeed's
+  // existing rendering (see the 'recovery' entry in AlertFeed.tsx) avoids
+  // building any new UI plumbing for this.
+  const seenDeliveryEventsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const r = await fetch(`${BACKEND}/alerts/delivery-incomplete-recent`);
+        if (!r.ok) return;
+        const rows: Record<string, unknown>[] = await r.json();
+        const fresh = rows.filter(row => {
+          const key = `${row.call_sid ?? row.id ?? ''}-${row.call_status ?? ''}-${row.created_at ?? ''}`;
+          if (seenDeliveryEventsRef.current.has(key)) return false;
+          seenDeliveryEventsRef.current.add(key);
+          return true;
+        });
+        if (fresh.length === 0) return;
+        setAlerts(prev => [
+          ...fresh.map((row, idx): AlertEvent => {
+            const incomplete = row.call_status === 'delivery_incomplete';
+            return {
+              id: `recovery-${String(row.id ?? row.call_sid ?? idx)}`,
+              type: 'recovery',
+              status: incomplete ? 'incomplete' : 'recovered',
+              message: incomplete
+                ? `⚠ Voice delivery incomplete — auto-recovered via SMS (${String(row.message ?? '')})`
+                : `✓ SMS recovery sent (${String(row.message ?? '')})`,
+              timestamp: new Date().toISOString(),
+            };
+          }),
+          ...prev,
+        ].slice(0, 20));
+      } catch {
+        // Silent — this is a supplementary transparency signal, not core
+        // functionality; a failed poll must never disrupt the dashboard.
+      }
+    };
+    poll();
+    const t = setInterval(poll, 10000);
+    return () => clearInterval(t);
+  }, []);
+
   // Fetch aurora predictions whenever kp changes (used by map markers on Aurora tab)
   useEffect(() => {
     if (currentKp <= 0) return;

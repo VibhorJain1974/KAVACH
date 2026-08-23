@@ -7,6 +7,7 @@ const TYPE_COLORS: Record<string, string> = {
   farmer: 'var(--aurora-orange)',
   fisherman: 'var(--plasma)',
   demo: 'var(--aurora-yellow)',
+  recovery: 'var(--solar)',
 };
 
 const TYPE_ICONS: Record<string, string> = {
@@ -14,6 +15,7 @@ const TYPE_ICONS: Record<string, string> = {
   farmer: '🌾',
   fisherman: '⚓',
   demo: '📡',
+  recovery: '⚠',
 };
 
 export default function AlertFeed({ alerts }: { alerts: AlertEvent[] }) {
@@ -78,7 +80,7 @@ export default function AlertFeed({ alerts }: { alerts: AlertEvent[] }) {
                 <div style={{ paddingLeft: 19, marginTop: 2 }}>
                   <span style={{
                     fontSize: 8, letterSpacing: '0.1em',
-                    color: alert.status === 'notified' || alert.status === 'called' ? 'var(--aurora-green)' : 'var(--aurora-yellow)',
+                    color: alert.status === 'notified' || alert.status === 'called' || alert.status === 'recovered' ? 'var(--aurora-green)' : 'var(--aurora-yellow)',
                   }}>
                     {alert.status?.toUpperCase()}
                   </span>

@@ -14,6 +14,21 @@ ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 FROM_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 
+# Purchased specifically for demo day, to keep that number's call history
+# clean until then. FROM_NUMBER above stays the default for every caller
+# that doesn't explicitly opt in — nothing here changes unless a caller
+# passes use_demo_number=True.
+DEMO_FROM_NUMBER = os.getenv("TWILIO_DEMO_PHONE_NUMBER")
+
+
+def _resolve_from_number(use_demo_number: bool = False) -> str:
+    """Which Twilio number to call FROM. Silently falls back to FROM_NUMBER
+    if TWILIO_DEMO_PHONE_NUMBER isn't set, rather than erroring — an unset
+    demo number should never block a real alert call."""
+    if use_demo_number and DEMO_FROM_NUMBER:
+        return DEMO_FROM_NUMBER
+    return FROM_NUMBER
+
 # Exact Hindi text — tested and confirmed intelligible on Polly.Aditi
 HINDI_TTS_MESSAGE = (
     "Namaste. Main KAVACH bol raha hoon. "
@@ -218,7 +233,13 @@ def _audio_twiml(language: str, cfg: dict) -> str:
 MACHINE_DETECTION = "Enable"
 
 
-def call_with_fallback(to_number: str, kp: float = 9.0, language: str = DEFAULT_LANGUAGE, _retry: bool = True) -> dict:
+def call_with_fallback(
+    to_number: str,
+    kp: float = 9.0,
+    language: str = DEFAULT_LANGUAGE,
+    _retry: bool = True,
+    use_demo_number: bool = False,
+) -> dict:
     """
     Place a voice alert call. Tries real TTS first (if the language has a
     confirmed Polly voice), falls back to a pre-recorded MP3 otherwise.
@@ -227,13 +248,14 @@ def call_with_fallback(to_number: str, kp: float = 9.0, language: str = DEFAULT_
     """
     language, cfg = _resolve_language(language)
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
+    from_number = _resolve_from_number(use_demo_number)
 
     if cfg["tts_supported"]:
         try:
             call = client.calls.create(
                 twiml=_tts_twiml(kp, cfg),
                 to=to_number,
-                from_=FROM_NUMBER,
+                from_=from_number,
                 record=True,
                 machine_detection=MACHINE_DETECTION,
             )
@@ -249,7 +271,7 @@ def call_with_fallback(to_number: str, kp: float = 9.0, language: str = DEFAULT_
         call = client.calls.create(
             twiml=_audio_twiml(language, cfg),
             to=to_number,
-            from_=FROM_NUMBER,
+            from_=from_number,
             record=True,
             machine_detection=MACHINE_DETECTION,
         )
@@ -263,23 +285,27 @@ def call_with_fallback(to_number: str, kp: float = 9.0, language: str = DEFAULT_
     if _retry:
         logger.info(f"Both call methods failed — retrying {to_number[-4:]} in 30s")
         time.sleep(30)
-        return call_with_fallback(to_number, kp, language, _retry=False)
+        return call_with_fallback(to_number, kp, language, _retry=False, use_demo_number=use_demo_number)
 
     logger.error(f"All call attempts failed for {to_number[-4:]}")
     return {"call_sid": None, "status": "failed", "method": "NONE", "language": language, "to": to_number}
 
 
-def make_alert_call(to_number: str, kp_index: float = 9.0, language: str = DEFAULT_LANGUAGE) -> dict:
+def make_alert_call(
+    to_number: str, kp_index: float = 9.0, language: str = DEFAULT_LANGUAGE, use_demo_number: bool = False
+) -> dict:
     """Public API — backward compatible. Delegates to call_with_fallback()."""
-    return call_with_fallback(to_number, kp_index, language)
+    return call_with_fallback(to_number, kp_index, language, use_demo_number=use_demo_number)
 
 
-def call_multiple(numbers: list[str], kp: float = 9.0, language: str = DEFAULT_LANGUAGE) -> list[dict]:
+def call_multiple(
+    numbers: list[str], kp: float = 9.0, language: str = DEFAULT_LANGUAGE, use_demo_number: bool = False
+) -> list[dict]:
     """Fire calls to all numbers simultaneously. Returns results in order received."""
     if not numbers:
         return []
     with ThreadPoolExecutor(max_workers=len(numbers)) as pool:
-        futures = {pool.submit(call_with_fallback, n, kp, language): n for n in numbers}
+        futures = {pool.submit(call_with_fallback, n, kp, language, use_demo_number=use_demo_number): n for n in numbers}
         results = {}
         for future in as_completed(futures):
             n = futures[future]
@@ -309,7 +335,11 @@ SMS_TEXT = {
 }
 
 # Voice outcomes that should trigger an SMS backup.
-SMS_FALLBACK_OUTCOMES = {"no-answer", "failed"}
+# 'delivery_incomplete' (B8, 2026-08-22) added: the call reported completed
+# but the duration heuristic in classify_outcome() flags it as likely cut
+# short before the message finished — recover via SMS the same way a
+# no-answer/failed call does.
+SMS_FALLBACK_OUTCOMES = {"no-answer", "failed", "delivery_incomplete"}
 
 
 def send_sms_alert(phone: str, language: str = DEFAULT_LANGUAGE, kp: float = 9.0, reason: str = "manual") -> dict:
@@ -422,32 +452,77 @@ def watch_and_log_call(call_sid: str, phone: str, language: str, timeout_s: int 
                         break
                     time.sleep(3)
 
-            outcome = classify_outcome(status, answered_by)
+            call_duration: int | None = None
+            try:
+                call_duration = int(call.duration) if call.duration is not None else None
+            except (TypeError, ValueError):
+                call_duration = None
+
+            outcome = classify_outcome(status, answered_by, duration=call_duration, language=language)
+
+            # For delivery_incomplete, carry the real evidence in the message
+            # itself — this is the row the operator portal's alert history
+            # renders, and per the transparency requirement it must show the
+            # actual measured numbers, not a bare status label, and must be
+            # honest that this is a heuristic rather than a confirmed failure.
+            voice_message = None
+            if outcome == "delivery_incomplete":
+                expected = EXPECTED_DURATION_S.get(language)
+                measured = "measured" if EXPECTED_DURATION_MEASURED.get(language) else "estimated"
+                expected_note = f"~{expected:.0f}s {measured} expected" if expected else "expected duration unknown"
+                voice_message = (
+                    f"Voice delivery incomplete — call cut short at {call_duration}s "
+                    f"of {expected_note} (duration heuristic, not a confirmed failure)."
+                )
+
             db.log_call(
                 phone=phone,
                 language=language,
                 outcome=outcome,
                 call_sid=call_sid,
                 recording_url=recording_url,
+                message=voice_message,
             )
             logger.info(
                 f"[watch] {call_sid[-8:]} status={status} answered_by={answered_by} "
-                f"outcome={outcome} rec={bool(recording_url)}"
+                f"duration={call_duration}s outcome={outcome} rec={bool(recording_url)}"
             )
 
             # Automatic SMS backup: the voice alert never reached them, so fall
             # back to text. Real product behaviour, not a demo flourish — a
             # farmer whose phone was engaged or off still gets the warning.
             # 'choose' is the IVR menu placeholder, not a real language.
+            # 'delivery_incomplete' (B8) joined this set 2026-08-22: the call
+            # connected and reported completed, but duration heuristics say the
+            # message likely got cut short — same "they may not have gotten the
+            # warning" logic applies, so the same recovery path fires.
             if outcome in SMS_FALLBACK_OUTCOMES:
                 sms_lang = language if language in SMS_TEXT else DEFAULT_LANGUAGE
                 sms = send_sms_alert(phone, sms_lang, reason=f"voice_{outcome}")
+
+                # For delivery_incomplete specifically, make the causal chain
+                # explicit in the log row itself — not just another generic
+                # sms_fallback line, but one that states plainly why: the voice
+                # call was flagged incomplete, here's the measured evidence,
+                # and this is a heuristic, not a certainty.
+                recovery_message = None
+                if outcome == "delivery_incomplete":
+                    expected = EXPECTED_DURATION_S.get(language)
+                    measured = "measured" if EXPECTED_DURATION_MEASURED.get(language) else "estimated"
+                    expected_note = f"~{expected:.0f}s {measured} expected" if expected else "expected duration unknown"
+                    recovery_message = (
+                        f"SMS fallback fired because voice call {call_sid[-8:]} was "
+                        f"detected delivery_incomplete ({call_duration}s of {expected_note}) — "
+                        f"duration heuristic, not a confirmed failure. Recovering via SMS."
+                    )
+
                 db.log_call(
                     phone=phone,
                     language=sms_lang,
                     outcome=f"sms_backup_{'sent' if sms.get('sms_sid') else 'failed'}",
                     call_sid=sms.get("sms_sid"),
                     alert_type="sms_fallback",
+                    message=recovery_message,
                 )
         except Exception as e:
             logger.warning(f"[watch] non-fatal failure watching {call_sid[-8:]}: {e}")
@@ -455,16 +530,104 @@ def watch_and_log_call(call_sid: str, phone: str, language: str, timeout_s: int 
     threading.Thread(target=_watch, daemon=True).start()
 
 
-def classify_outcome(status: str, answered_by: str | None) -> str:
+# ---------------------------------------------------------------------------
+# Delivery-completeness heuristic (B8, 2026-08-22 findings.md investigation).
+#
+# Real, reproducible finding: Twilio can report a call as `status=completed`
+# even when the actual spoken message was cut short mid-way — most likely
+# India's TRAI-mandated carrier-side detection of automated/robotic calling
+# patterns (see findings.md's B8 entries for the full forensic trail: four
+# real test calls placed specifically to isolate the cause. Answering-machine
+# detection was ruled out — disabling it entirely did not change the amount
+# of audio that played. A single destination number was ruled out — the
+# truncation reproduced on a second, different phone number. Twilio's own
+# Geographic Permissions for India were ruled out — confirmed fully enabled,
+# no restriction. This codebase was ruled out — no `time_limit` is set
+# anywhere in the call-creation path). Before this fix, the DB's own
+# `call_status` field could not distinguish "message played in full" from
+# "call connected, then got cut off partway" — both looked identical:
+# `answered`. This is a HEURISTIC based on call duration, not a certainty —
+# an occasional short call could have an innocent explanation. It is stored
+# as its own distinct outcome value precisely so nothing downstream (the DB,
+# the operator portal, the SMS-fallback trigger) has to pretend otherwise.
+#
+# EXPECTED_DURATION_S["hindi"] = 36.0 is a REAL measured number, not a guess:
+# the one call with a directly-confirmed Twilio `duration` field for a full,
+# uninterrupted playback is CA833b779d48c36d7a7151c33c9b3aefe5 (2026-08-19
+# autonomous pipeline test, `duration=36` per the Twilio Calls API). This is
+# corroborated by the WAV-level forensic dataset elsewhere in findings.md: six
+# real "full playback" Hindi recordings spanning 35.10s-36.86s. Every other
+# language has zero real placed-call data at all (findings.md's 2026-08-20
+# multi-language sanity check found no real non-Hindi recordings anywhere in
+# this account's history) — their expected durations are ESTIMATED from
+# message character-length relative to Hindi's real 36s baseline. This is an
+# approximation, not a measurement, and is labelled as such wherever it's used.
+def _text_len(cfg: dict) -> int:
+    return len(cfg["message"]) + len(cfg["kp_suffix"])
+
+
+def _build_expected_durations() -> dict[str, float]:
+    hindi_len = _text_len(LANGUAGES["hindi"])
+    hindi_s = 36.0
+    out: dict[str, float] = {}
+    for lang, cfg in LANGUAGES.items():
+        if lang == "hindi":
+            out[lang] = hindi_s
+            continue
+        this_len = _text_len(cfg)
+        out[lang] = round(hindi_s * (this_len / hindi_len), 1) if hindi_len else hindi_s
+    return out
+
+
+# True for languages where this number comes from a real placed call, not the
+# character-length estimate above — surfaced so callers (e.g. UI copy) can be
+# honest about which is which rather than presenting both as equally solid.
+EXPECTED_DURATION_MEASURED = {"hindi": True}
+EXPECTED_DURATION_S = _build_expected_durations()
+
+# Known weakness, flagged rather than silently trusted: character-count is a
+# poor proxy across writing systems — Japanese kanji/hiragana carry far more
+# spoken duration per character than Latin/Devanagari script, so this
+# estimate (~17.8s) almost certainly runs too low for "japanese" specifically.
+# Left as-is rather than hand-tuned, because there is zero real call data for
+# ANY non-Hindi language to calibrate against (confirmed in findings.md's
+# 2026-08-20 multi-language sanity check) — a hand-picked correction here
+# would just be a different guess, not a better-grounded one. If a real
+# Japanese call is ever placed, replace this estimate with that measurement
+# the same way `hindi` already is, rather than adjusting the formula.
+
+# 0.75: real truncated calls from the B8 investigation (all confirmed via WAV
+# forensic analysis to be genuine partial real content, NOT the old
+# trial-disclaimer failure mode fixed by B7) measured call.duration of
+# 20s/26s/26s/26s against the 36s real baseline — 55.6% to 72.2% of expected.
+# The known-good full-completion cluster sits at 97.5%-102.4% of that same
+# baseline (35.10-36.86s recorded / 36s). 0.75 sits in the ~25-point gap
+# between those two clusters with margin on both sides — not an arbitrary
+# round number, and not so tight that ordinary ring-time jitter on a genuine
+# full playback would false-positive.
+DELIVERY_DURATION_THRESHOLD_PCT = 0.75
+
+
+def classify_outcome(
+    status: str,
+    answered_by: str | None,
+    duration: int | None = None,
+    language: str | None = None,
+) -> str:
     """Map Twilio's (status, AnsweredBy) pair to the outcome we log.
 
     AnsweredBy values from AMD: human | machine_start | machine_end_beep |
     machine_end_silence | machine_end_other | fax | unknown.
 
     'unknown' means detection timed out or couldn't decide — we treat that as
-    'answered', never as a failure, because the message still played. Being
+    'answered' (or, per the new check below, 'delivery_incomplete'), never as
+    a failure, because the message still played, at least in part. Being
     wrong here costs us a slightly inaccurate log row; being wrong the other
     way would understate real delivered alerts.
+
+    `duration`/`language` are optional so existing callers that don't have
+    them (e.g. get_call_status(), which has no way to know which language a
+    call_sid used) are completely unaffected and keep their prior behaviour.
     """
     if status in ("no-answer", "busy"):
         return "no-answer"
@@ -475,6 +638,10 @@ def classify_outcome(status: str, answered_by: str | None) -> str:
             return "voicemail"
         if answered_by == "fax":
             return "failed"
+        if duration is not None and language:
+            expected = EXPECTED_DURATION_S.get(language)
+            if expected and duration < DELIVERY_DURATION_THRESHOLD_PCT * expected:
+                return "delivery_incomplete"
         return "answered"
     return status or "unknown"
 
@@ -521,6 +688,16 @@ def _ivr_menu_twiml(action_url: str) -> str:
 
     Voice and language code are read from LANGUAGES rather than duplicated
     here, so changing a voice in one place can't leave the menu out of sync.
+
+    The 1s `<Pause>` is deliberately the FIRST verb INSIDE `<Gather>`, not
+    before it (2026-08-22, DTMF re-investigation — see findings.md). Twilio
+    only collects digits while `<Gather>` is the active verb; a `<Pause>`
+    placed before `<Gather>` creates a real dead window where a caller who
+    presses immediately on answer (before the Pause elapses) has that press
+    silently dropped — Twilio was never listening yet. Nesting the Pause
+    inside `<Gather>` keeps the same 1s delay before the first spoken prompt
+    (avoiding clipped audio right after answer) while making Gather listen
+    for DTMF from the moment the call connects, closing that window.
     """
     prompts = "".join(
         f'<Say language="{LANGUAGES[lang]["twilio_lang"]}" voice="{LANGUAGES[lang]["voice"]}">{text}</Say>'
@@ -529,8 +706,8 @@ def _ivr_menu_twiml(action_url: str) -> str:
     return (
         '<?xml version="1.0" encoding="UTF-8"?>'
         "<Response>"
-        '<Pause length="1"/>'
         f'<Gather numDigits="1" timeout="{IVR_GATHER_TIMEOUT}" action="{action_url}" method="POST">'
+        '<Pause length="1"/>'
         f"{prompts}"
         "</Gather>"
         # Reached only if the caller pressed nothing before the timeout.
@@ -745,7 +922,9 @@ def escalation_followup_response_twiml(language: str, digit: str) -> tuple[str, 
     return twiml, category
 
 
-def call_with_reply(to_number: str, kp: float, language: str, action_url: str) -> dict:
+def call_with_reply(
+    to_number: str, kp: float, language: str, action_url: str, use_demo_number: bool = False
+) -> dict:
     """Place an alert call that asks for a confirmation digit afterwards."""
     language, _ = _resolve_language(language)
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
@@ -753,7 +932,7 @@ def call_with_reply(to_number: str, kp: float, language: str, action_url: str) -
         call = client.calls.create(
             twiml=alert_with_reply_twiml(kp, language, action_url),
             to=to_number,
-            from_=FROM_NUMBER,
+            from_=_resolve_from_number(use_demo_number),
             record=True,
             machine_detection=MACHINE_DETECTION,
         )
@@ -762,7 +941,7 @@ def call_with_reply(to_number: str, kp: float, language: str, action_url: str) -
         return {"call_sid": call.sid, "status": call.status, "method": "TTS_TWO_WAY", "language": language, "to": to_number}
     except Exception as e:
         logger.warning(f"Two-way call failed ({language}, {to_number[-4:]}): {e} — falling back to one-way")
-        return call_with_fallback(to_number, kp, language)
+        return call_with_fallback(to_number, kp, language, use_demo_number=use_demo_number)
 
 
 def ivr_language_twiml(kp: float, digit: str | None) -> tuple[str, str]:
@@ -774,7 +953,9 @@ def ivr_language_twiml(kp: float, digit: str | None) -> tuple[str, str]:
     return twiml, language
 
 
-def call_with_language_menu(to_number: str, kp: float, action_url: str) -> dict:
+def call_with_language_menu(
+    to_number: str, kp: float, action_url: str, use_demo_number: bool = False
+) -> dict:
     """Place a call that opens with the language-choice menu instead of a
     single pre-picked language. Live/judge calls only."""
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
@@ -782,7 +963,7 @@ def call_with_language_menu(to_number: str, kp: float, action_url: str) -> dict:
         call = client.calls.create(
             twiml=_ivr_menu_twiml(action_url),
             to=to_number,
-            from_=FROM_NUMBER,
+            from_=_resolve_from_number(use_demo_number),
             record=True,
             machine_detection=MACHINE_DETECTION,
         )
@@ -791,4 +972,4 @@ def call_with_language_menu(to_number: str, kp: float, action_url: str) -> dict:
         return {"call_sid": call.sid, "status": call.status, "method": "IVR_CHOOSE", "language": "choose", "to": to_number}
     except Exception as e:
         logger.warning(f"IVR call failed ({to_number[-4:]}): {e} — falling back to {DEFAULT_LANGUAGE}")
-        return call_with_fallback(to_number, kp, DEFAULT_LANGUAGE)
+        return call_with_fallback(to_number, kp, DEFAULT_LANGUAGE, use_demo_number=use_demo_number)

@@ -394,12 +394,38 @@ export default function OperatorPortal() {
                 {data.db_state === 'ok' && data.alert_history.length === 0 && (
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>No alerts logged yet.</div>
                 )}
-                {data.alert_history.map((r, i) => (
-                  <div key={i} style={{ padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: 10 }}>
-                    <span style={{ color: 'var(--plasma)' }}>{String(r.call_status ?? '—')}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.5)' }}> · {String(r.message ?? '')}</span>
-                  </div>
-                ))}
+                {data.alert_history.map((r, i) => {
+                  const st = String(r.call_status ?? '');
+                  const incomplete = st === 'delivery_incomplete';
+                  const recovered = st.startsWith('sms_backup_') && String(r.message ?? '').includes('delivery_incomplete');
+                  return (
+                    <div key={i} style={{
+                      padding: incomplete || recovered ? '7px 8px' : '5px 0',
+                      marginBottom: incomplete || recovered ? 3 : 0,
+                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      borderLeft: incomplete ? '2px solid var(--solar)' : recovered ? '2px solid var(--aurora-green)' : 'none',
+                      background: incomplete ? 'rgba(255,180,60,0.06)' : recovered ? 'rgba(0,255,136,0.05)' : 'transparent',
+                      fontSize: 10,
+                    }}>
+                      {incomplete ? (
+                        <div style={{ color: 'var(--solar)', fontWeight: 600 }}>
+                          ⚠ Voice delivery incomplete
+                          <span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}> · {String(r.message ?? '')}</span>
+                        </div>
+                      ) : recovered ? (
+                        <div style={{ color: 'var(--aurora-green)', fontWeight: 600 }}>
+                          ✓ Recovered via SMS
+                          <span style={{ color: 'rgba(255,255,255,0.55)', fontWeight: 400 }}> · {String(r.message ?? '')}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span style={{ color: 'var(--plasma)' }}>{st || '—'}</span>
+                          <span style={{ color: 'rgba(255,255,255,0.5)' }}> · {String(r.message ?? '')}</span>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="panel" style={{ padding: 14 }}>

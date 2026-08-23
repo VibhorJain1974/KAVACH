@@ -41,6 +41,7 @@ frontend/.claude/
 .playwright-mcp/
 .firecrawl/
 blockers.md
+findings.md
 
 # Office lock files
 ~$*.pptx
@@ -64,3 +65,21 @@ backend/data/cache/
 # Tool caches
 .claude-flow/
 frontend/.claude-flow/
+
+# Superseded/internal planning docs and old scaffolding — kept on local
+# disk, untracked from the public submission (2026-08-22 cleanup pass)
+PRD.md
+docs/council_roadmap_features.md
+docs/SUBMISSION_CHECKLIST.md
+docs/make_pptx.py
+docs/patch_phase1.py
+docs/patch_phase2.py
+docs/render_deck.py
+docs/KAVACH_FARAWAY2026.html
+logs/api_status.txt
+logs/build_log.txt
+logs/demo_runbook.txt
+static/README.txt
+static/generate_audio.py
+static/hindi_alert.mp3
+data/may2024_storm.json

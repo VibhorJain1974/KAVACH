@@ -228,7 +228,9 @@ async def list_languages():
 
 
 @router.post("/trigger-call")
-async def trigger_demo_call(phones: str = None, language: str = "hindi", confirm: bool = False):
+async def trigger_demo_call(
+    phones: str = None, language: str = "hindi", confirm: bool = False, use_demo_number: bool = False
+):
     """Fire Twilio calls to one or more numbers simultaneously.
     phones: comma-separated e.g. +919999999999,+918888888888
     language: hindi | english | japanese | punjabi | tamil (default hindi)
@@ -237,6 +239,10 @@ async def trigger_demo_call(phones: str = None, language: str = "hindi", confirm
     second confirmation click before it ever sends confirm=true, but this
     check is what actually stops a stray or scripted request from firing
     a call, not just the UI affordance.
+    use_demo_number: place the call FROM TWILIO_DEMO_PHONE_NUMBER (purchased
+    for demo day) instead of the default TWILIO_PHONE_NUMBER. Defaults to
+    false — every existing caller of this endpoint keeps today's behavior
+    unchanged unless it explicitly opts in.
     """
     targets = [p.strip() for p in phones.split(",") if p.strip()] if phones else _get_demo_phones()
     if not targets:
@@ -272,12 +278,18 @@ async def trigger_demo_call(phones: str = None, language: str = "hindi", confirm
             )
         action_url = f"{_public_base_url()}/demo/ivr-language"
         results = await loop.run_in_executor(
-            None, lambda: [call_with_language_menu(n, 9.0, action_url) for n in targets]
+            None, lambda: [call_with_language_menu(n, 9.0, action_url, use_demo_number=use_demo_number) for n in targets]
         )
-        return {"success": True, "calls": results, "total": len(results), "language": CHOOSE_LANGUAGE}
+        return {
+            "success": True, "calls": results, "total": len(results), "language": CHOOSE_LANGUAGE,
+            "from_number": "demo" if use_demo_number else "primary",
+        }
 
-    results = await loop.run_in_executor(None, call_multiple, targets, 9.0, language)
-    return {"success": True, "calls": results, "total": len(results), "language": language}
+    results = await loop.run_in_executor(None, call_multiple, targets, 9.0, language, use_demo_number)
+    return {
+        "success": True, "calls": results, "total": len(results), "language": language,
+        "from_number": "demo" if use_demo_number else "primary",
+    }
 
 
 @router.post("/ivr-language")
