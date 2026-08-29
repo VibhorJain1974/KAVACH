@@ -339,7 +339,7 @@ The May 2024 storm was the largest in twenty years. Auroras appeared over Hanle 
 
 KAVACH is the answer we could actually build. One system. 28 grid utilities. Hindi voice calls on feature phones. No app required.
 
-> Replayed against the real May 2024 G5 storm, KAVACH reaches **12,400 farmers** across all 28 DISCOM zones - roughly **4.5 hours ahead of peak impact**, with zero human triggers.
+> Replayed against the real May 2024 G5 storm, KAVACH reaches **12,400 farmers** across all 28 DISCOM zones — roughly **4.5 hours ahead of peak impact**, with zero human triggers.
 
 ---
 
