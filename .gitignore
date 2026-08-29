@@ -83,3 +83,6 @@ static/README.txt
 static/generate_audio.py
 static/hindi_alert.mp3
 data/may2024_storm.json
+
+.claude/
+**/.claude/

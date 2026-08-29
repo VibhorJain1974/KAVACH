@@ -102,7 +102,7 @@ export default function LandingPage() {
           <div className="nav-right">
             <Link href="/dashboard" className="nav-link">DASHBOARD</Link>
             <a
-              href="https://github.com/VibhorJain1974/kavach-faraway-2026"
+              href="https://github.com/VibhorJain1974/KAVACH"
               target="_blank" rel="noopener noreferrer"
               className="nav-link"
             >
@@ -113,7 +113,7 @@ export default function LandingPage() {
 
         {/* Hero */}
         <section className="hero-section">
-          <div className="hero-eyebrow">FAR AWAY 2026 · SPACE & AEROSPACE · TEAM 404_SHINOBI</div>
+          <div className="hero-eyebrow">BUILD WITH BHARAT 2.0 · CODEVERSE · TEAM 404SHINOBI</div>
           <h1 className="hero-title">KAVACH</h1>
           <div className="hero-hindi">कवच — भारत का सौर तूफान रक्षक</div>
           <p className="hero-tagline">
@@ -128,7 +128,7 @@ export default function LandingPage() {
               LIVE DASHBOARD
             </Link>
             <a
-              href="https://github.com/VibhorJain1974/kavach-faraway-2026"
+              href="https://github.com/VibhorJain1974/KAVACH"
               target="_blank" rel="noopener noreferrer"
               className="cta-secondary"
             >
@@ -263,12 +263,12 @@ export default function LandingPage() {
         {/* Footer */}
         <footer className="landing-footer">
           <div className="footer-left">
-            KAVACH · FAR AWAY 2026 · TEAM 404_SHINOBI · SPACE & AEROSPACE
+            KAVACH · BUILD WITH BHARAT 2.0 · TEAM 404SHINOBI · CODEVERSE
           </div>
           <div className="footer-right">
             <Link href="/dashboard" className="footer-link">DASHBOARD</Link>
             <a
-              href="https://github.com/VibhorJain1974/kavach-faraway-2026"
+              href="https://github.com/VibhorJain1974/KAVACH"
               target="_blank" rel="noopener noreferrer"
               className="footer-link"
             >

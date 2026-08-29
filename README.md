@@ -1,55 +1,74 @@
-# KAVACH — Autonomous Space Weather Shield for India
+<div align="center">
 
-> **"It called the farmer before the lights went out."**
+# 🛡️ KAVACH
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square)](https://fastapi.tiangolo.com)
-[![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-000000?style=flat-square&logo=next.js)](https://nextjs.org)
-[![Twilio](https://img.shields.io/badge/Voice-Twilio_Hindi-F22F46?style=flat-square)](https://twilio.com)
-[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000?style=flat-square&logo=vercel)](https://vercel.com)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+### The Sun doesn't send warnings. We do.
 
-**FAR AWAY 2026 Hackathon** · Space & Aerospace · Team 404_SHINOBI
+**An autonomous space weather shield that calls Bharat before the lights go out.**
 
----
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Open-F26522?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-rust-xi-79.vercel.app)
+[![API Status](https://img.shields.io/badge/API-Live-138808?style=for-the-badge&logo=railway&logoColor=white)](https://kavach-backend-production-016f.up.railway.app/health)
+[![Data](https://img.shields.io/badge/Powered_by-NASA_%2B_NOAA-0B3D91?style=for-the-badge&logo=nasa&logoColor=white)](https://ccmc.gsfc.nasa.gov/tools/DONKI/)
 
-## The Problem
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_14-000000?logo=nextdotjs&logoColor=white)
+![Mapbox](https://img.shields.io/badge/Mapbox_GL-000000?logo=mapbox&logoColor=white)
+![Twilio](https://img.shields.io/badge/Twilio_Voice_+_SMS-F22F46?logo=twilio&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-1B2A6B)
 
-On May 10–11, 2024, the strongest geomagnetic storm in 20 years hit Earth (Kp=9.0, G5 level):
+**Build with Bharat 2.0** · National Level Hackathon by CodeVerse · **Team 404shinobi**
 
-- India's 28 power grid utilities (DISCOMs) received **zero automated warning**
-- 300 million farmers and fishermen relying on GPS got **no alert at all**
-- English-only, internet-only Western alert systems are useless to India's last mile
-- India came within hours of widespread transformer failures
-
-**No Indian team had ever built a solution.** Until KAVACH.
-
----
-
-## What KAVACH Does
-
-When NASA/NOAA detects a solar storm heading toward Earth:
-
-1. **Monitors** NOAA SWPC's live Kp-index every 5 minutes and NASA DONKI every 15 minutes, autonomously
-2. **Maps** storm risk onto India's 28 DISCOM grid zones (north-first, by geomagnetic exposure)
-3. **Calls** farmers and fishermen on basic feature phones via Twilio — **Hindi by default, 10 Indian languages on demand** — no app, no internet required
-4. **Listens** — the farmer presses **1** to confirm safe or **2** to ask for help; pressing 2 escalates to a human operator. If the call goes unanswered, KAVACH falls back to SMS automatically
-
-Zero human trigger. Fully autonomous — a real Kp≥5 (`STORM_ALERT_THRESHOLD_KP`) crossing on the live NOAA feed dispatches a real alert and call on its own, with a 6-hour cooldown so one storm doesn't cause a call per poll cycle. Verified against a genuine live G1 event, not just the scripted May 2024 replay below — see `findings.md`.
+</div>
 
 ---
 
-## Live Demo
+## The 90 seconds that made this necessary
 
-**Frontend:** https://frontend-rust-xi-79.vercel.app  
-**Backend API:** https://kavach-backend-production-016f.up.railway.app
+On **13 March 1989**, a geomagnetic storm induced currents in Québec's power grid. The province went dark in **90 seconds** — six million people, nine hours, no warning.
 
-Click **REPLAY STORM** to relive the May 2024 G5 event — map goes red, Hindi call fires, in under 90 seconds.
+In **May 2024**, the strongest storm in two decades (Kp = 9.0, G5) put auroras over Hanle in Ladakh for the first time in decades and knocked GNSS-guided tractors out of the fields mid-planting. US farmers lost an estimated **$500 million**. Lloyd's of London now models an extreme space weather event at up to **$2.4 trillion** in global economic loss.
+
+India rode that one out on luck, not design:
+
+- India's **28 DISCOMs** received no automated space-weather warning
+- Not one farmer or fisherman on a feature phone was told anything
+- Every existing alert product assumes an app, a data plan and English literacy — all three assumptions fail at India's last mile
+
+**The data was never the problem.** NASA and NOAA publish CME detections openly, for free, 15–72 hours ahead of impact. It lands in dashboards read by scientists. It has never once landed in the hand of a person who had to act on it.
+
+**KAVACH is that last mile.**
+
+---
+
+## What KAVACH does
+
+When NASA/NOAA detect a solar storm heading for Earth, with **zero human trigger**:
+
+1. **Monitors** — NOAA SWPC's live Kp-index every 5 minutes, NASA DONKI every 15 minutes, autonomously
+2. **Maps** — storm risk onto India's 28 DISCOM grid zones, north-first, by geomagnetic exposure
+3. **Calls** — farmers and fishermen on basic feature phones via Twilio. **Hindi by default, 10 Indian and international languages on demand.** No app, no internet, no literacy required
+4. **Listens** — the farmer presses **1** to confirm safe or **2** to ask for help; **2** escalates to a human operator. Unanswered calls fall back to SMS automatically
+
+A real **Kp ≥ 5** crossing (`STORM_ALERT_THRESHOLD_KP`) on the live NOAA feed dispatches a real alert and a real call on its own, with a 6-hour cooldown so one storm doesn't fire a call per poll cycle. **Verified against a genuine live G1 event**, not only the scripted May 2024 replay — see `findings.md`.
+
+The person who needs the warning is the **recipient** of this system, never its operator.
+
+---
+
+## Live demo
+
+**Frontend** → https://frontend-rust-xi-79.vercel.app
+**Backend API** → https://kavach-backend-production-016f.up.railway.app
+
+Click **REPLAY STORM** to relive the May 2024 G5 event — the map goes red across 28 zones and a Hindi voice call fires, in under 90 seconds.
 
 ---
 
 ## Screenshots
 
-| Command Center (normal state) | Demo — map goes red (Kp=9.0) |
+| Command Center (normal state) | Demo — map goes red (Kp = 9.0) |
 |---|---|
 | ![Command Center](docs/screenshots/01_home.png) | ![Storm Active](docs/screenshots/06_demo_red.png) |
 
@@ -63,22 +82,51 @@ Click **REPLAY STORM** to relive the May 2024 G5 event — map goes red, Hindi c
 
 ---
 
+## Why nobody else closes this loop
+
+|                                       | Space weather dashboards | ISRO / IIG advisories | NDMA / CAP disaster SMS | **KAVACH** |
+| :------------------------------------ | :----------------------: | :-------------------: | :---------------------: | :--------: |
+| Detects solar storms                  |            ✅             |           ✅           |            ❌            |   **✅**    |
+| Maps risk to Indian grid zones        |            ❌             |        partial        |            ❌            |   **✅**    |
+| Reaches a feature-phone user          |            ❌             |           ❌           |         partial         |   **✅**    |
+| Works with no literacy, no app        |            ❌             |           ❌           |            ❌            |   **✅**    |
+| Two-way — the citizen can reply       |            ❌             |           ❌           |            ❌            |   **✅**    |
+| Fires with **zero** human trigger     |            ❌             |           ❌           |            ❌            |   **✅**    |
+
+The satellite data is free to everyone on Earth. What nobody has built for India is the **autonomous last-mile delivery layer** that turns a Kp index into a phone ringing in a village at 3 AM — and lets the person who answers press a key back.
+
+---
+
 ## Architecture
 
 ```mermaid
-graph LR
-    A[NASA DONKI\n15-min poll] --> D[KAVACH Brain\nFastAPI + APScheduler]
-    B[NOAA SWPC\n5-min poll] --> D
-    C[ISRO MOSDAC\nPlanned] --> D
-    D --> E[Storm Classifier\ngreen/yellow/red]
-    E --> F[DISCOM Mapper\n28 zones · lat/lng]
-    F --> G[Supabase\nalert log]
-    F --> H[Twilio\nHindi voice call]
-    G --> I[Next.js Dashboard\nIndia Mapbox overlay]
-    H --> J[Farmer's Phone\nfeature phone · Hindi]
+flowchart LR
+    A["🛰️ NASA DONKI<br/>15-min poll"] --> D
+    B["📡 NOAA SWPC<br/>5-min poll"] --> D
+    C["🇮🇳 ISRO MOSDAC<br/>planned"] -.-> D
+    D["🧠 KAVACH Brain<br/>FastAPI + APScheduler"] --> E["⚡ Storm Classifier<br/>green / yellow / red"]
+    E --> F["🗺️ DISCOM Mapper<br/>28 zones · lat-lng"]
+    F --> G[("🗄️ Supabase<br/>alert + reply log")]
+    F --> H["📞 Twilio<br/>voice · SMS · IVR"]
+    G --> I["🖥️ Next.js Console<br/>Mapbox India overlay"]
+    H --> J["🧑‍🌾 Farmer's phone<br/>feature phone · Hindi"]
+    J -."press 1 / 2".-> H
+
+    style A fill:#0B3D91,color:#fff,stroke:none
+    style B fill:#0B3D91,color:#fff,stroke:none
+    style C fill:#EEEEEE,color:#555,stroke:#BBB,stroke-dasharray:4
+    style D fill:#F26522,color:#fff,stroke:none
+    style E fill:#1B2A6B,color:#fff,stroke:none
+    style F fill:#1B2A6B,color:#fff,stroke:none
+    style G fill:#3FCF8E,color:#08321f,stroke:none
+    style H fill:#F22F46,color:#fff,stroke:none
+    style I fill:#F2F5FC,color:#141414,stroke:#1B2A6B
+    style J fill:#FDF1EA,color:#141414,stroke:#F26522
 ```
 
-**Data flow:** raw solar event → severity classification → regional risk mapping → simultaneous DISCOM notification + farmer voice call.
+**Data flow:** raw solar event → severity classification → regional risk mapping → simultaneous DISCOM notification + farmer voice call → farmer's keypress back into the system.
+
+**Design principle: agents-first.** Every capability is a service that runs unattended. The web console is an *observation window*, never a control panel — a control panel implies somebody is sitting at it, and storms don't wait for office hours.
 
 ---
 
@@ -92,67 +140,65 @@ graph LR
 | **Two-Way Voice Reply** | Farmer presses **1** to confirm safe or **2** to request help. Pressing 2 escalates to a human operator via a Telegram alert (masked phone, language, call SID, timestamp) — fire-and-forget, never blocks the call |
 | **Automatic SMS Fallback** | If a voice call is unanswered or fails, KAVACH auto-sends the same alert as an SMS in the same language — the farmer still gets the warning |
 | **Operator Portal** | `/operator` — a DISCOM operator logs in (shared demo key) to see their zone's live risk and the real alert + farmer-reply history from Supabase. Honest scope: a real view over real data, not multi-tenant SaaS |
-| **Demo Replay** | 9-step SSE stream replaying May 2024 storm (22.6s) |
-| **Call Recording Proof** | Every demo call auto-recorded · audio player appears in UI after call ends |
-| **Aurora Predictor** | Kp-based Northern Lights visibility for 6 Indian locations · plotted on map |
+| **Demo Replay** | 9-step SSE stream replaying the May 2024 storm (22.6s) |
+| **Call Recording Proof** | Every demo call auto-recorded · audio player appears in the UI after the call ends |
+| **Aurora Predictor** | Kp-based Northern Lights visibility for 6 Indian locations · plotted on the map |
 | **Daily Shield** | Space Weather Score 0–100 · Devanagari Hindi + English morning briefing |
 | **Storm Memory** | 4 historical storms · counterfactual KAVACH alerts since 2003 |
-| **Solar Header** | Three.js Sun+Earth+CME particle system · storm-reactive |
+| **Solar Header** | Three.js Sun + Earth + CME particle system · storm-reactive |
 | **Constellation Fusion** | Fuses NASA DONKI + NOAA GOES X-ray flux + USGS ground magnetometer into one threshold-crossing confidence score, with a per-signal explainability breakdown · JAXA Hinode & ISRO Aditya-L1 shown as honest mission acknowledgments (no public live API exists for either — never presented as live data) |
-| **Global Readiness Gap** | Sourced comparison showing Japan (NICT), USA (NOAA), and Europe (ESA) all lack a last-mile citizen alert channel — KAVACH is the only one that reaches an individual farmer's phone |
-| **Venue-Safe Offline Mode** | Every new external API call (DONKI, GOES, USGS) is wrapped in a cache-then-fixture fallback (`DEMO_OFFLINE_MODE=true`) — a dead feed degrades to cached or bundled data instead of breaking the demo |
+| **Global Readiness Gap** | Sourced comparison showing Japan (NICT), USA (NOAA) and Europe (ESA) all lack a last-mile citizen alert channel — KAVACH is the only one that reaches an individual farmer's phone |
+| **Venue-Safe Offline Mode** | Every external API call (DONKI, GOES, USGS) is wrapped in a cache-then-fixture fallback (`DEMO_OFFLINE_MODE=true`) — a dead feed degrades to cached or bundled data instead of breaking the demo |
 
 ---
 
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14 · TypeScript · Tailwind · Mapbox GL JS · Three.js |
-| Backend | FastAPI · APScheduler · httpx · Python 3.13 |
-| Database | Supabase (PostgreSQL + realtime) |
-| Voice | Twilio Programmable Voice + SMS · Amazon Polly + Google TTS (10 languages) · two-way IVR |
-| Data | NASA DONKI API · NOAA SWPC API · ISRO (planned) |
-| Deploy | Vercel (frontend) · Railway (backend) |
+| **Frontend** | Next.js 14 · TypeScript · Tailwind · Mapbox GL JS · Three.js |
+| **Backend** | FastAPI · APScheduler · httpx · Python 3.13 |
+| **Database** | Supabase (PostgreSQL + realtime) |
+| **Voice** | Twilio Programmable Voice + SMS · Amazon Polly + Google TTS (10 languages) · two-way IVR |
+| **Data** | NASA DONKI API · NOAA SWPC API · NOAA GOES X-ray · USGS magnetometer · ISRO (planned) |
+| **Deploy** | Vercel (frontend) · Railway (backend) |
 
 ---
 
-## Quick Start
+## Quick start
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- Twilio account with a phone number
-- NASA API key (free at https://api.nasa.gov)
-- Supabase project
-- Mapbox token
+Python 3.11+ · Node.js 18+ · a Twilio account with a phone number · a NASA API key ([free](https://api.nasa.gov)) · a Supabase project · a Mapbox token
 
 ### Backend
 ```bash
 cd backend
 pip install -r requirements.txt
-cp ../.env.example ../.env
-# Edit .env with your keys
+cp ../.env.example ../.env      # then fill in your keys
 uvicorn main:app --reload
 ```
+
+Interactive API docs at **http://localhost:8000/docs** · health check at **/health**
 
 ### Frontend
 ```bash
 cd frontend
 npm install
-# Copy .env.example to .env.local and fill in values
+cp .env.example .env.local      # then fill in your values
 npm run dev
 ```
 
-### Run the Demo
-1. Start backend on port 8000
-2. Start frontend on port 3000
+### Run the demo
+1. Backend on port 8000
+2. Frontend on port 3000
 3. Open http://localhost:3000
 4. Click **REPLAY STORM**
 
+> **Windows note:** if Smart App Control blocks `uvicorn.exe`, run `python -m uvicorn main:app --reload --port 8000` instead. Don't run `npm audit fix --force` — it breaks the pinned Mapbox / Three.js / Next versions.
+
 ---
 
-## API Reference
+## API reference
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -162,17 +208,17 @@ npm run dev
 | GET | `/storm/may2024` | May 2024 extreme storm dataset |
 | GET | `/storm/history?days=7` | Recent storm history from NASA DONKI |
 | GET | `/alerts/discoms` | All 28 DISCOMs with risk levels |
-| POST | `/demo/replay` | SSE stream — replay May 2024 storm |
+| POST | `/demo/replay` | SSE stream — replay the May 2024 storm |
 | GET | `/demo/languages` | Honest per-language TTS status — which languages have real live TTS vs a pre-recorded fallback |
-| POST | `/demo/trigger-call?phones=+91XXXXXXXXXX&language=hindi&confirm=true` | Fire a Twilio voice alert call (comma-sep phones for multiple). `language`: hindi\|english\|japanese\|punjabi\|tamil\|**choose** (default hindi). `choose` plays a spoken language menu and branches on the pressed digit — **live/judge calls only, requires a publicly reachable `BACKEND_URL`**; the autonomous replay path is unaffected. `confirm=true` is server-enforced and required whenever `phones` is passed explicitly — the pre-configured `DEMO_PHONE_NUMBER` path doesn't need it |
-| GET | `/demo/recording?call_sid=CAxxxx` | Check if recording ready, returns proxy URL. Only reports `ready:true` once Twilio marks the recording `completed` — while the call is live it returns `ready:false` with `state:"processing"`, so the player is never handed a half-written file |
-| POST | `/demo/ivr-language` | Twilio webhook for the "Let them choose" IVR. Receives the pressed `Digits` and returns the alert TwiML in that language (1=Hindi, 2=English, 3=Japanese, 4=Punjabi, 5=Tamil, 6=Telugu, 7=Marathi, 8=Bengali, 9=Gujarati, 0=Kannada; no/unknown digit → Hindi) |
+| POST | `/demo/trigger-call?phones=+91XXXXXXXXXX&language=hindi&confirm=true` | Fire a Twilio voice alert call (comma-separated phones for multiple). `language`: hindi\|english\|japanese\|punjabi\|tamil\|**choose** (default hindi). `choose` plays a spoken language menu and branches on the pressed digit — **live/judge calls only, requires a publicly reachable `BACKEND_URL`**; the autonomous replay path is unaffected. `confirm=true` is server-enforced and required whenever `phones` is passed explicitly — the pre-configured `DEMO_PHONE_NUMBER` path doesn't need it |
+| GET | `/demo/recording?call_sid=CAxxxx` | Check if a recording is ready, returns a proxy URL. Only reports `ready:true` once Twilio marks the recording `completed` — while the call is live it returns `ready:false` with `state:"processing"`, so the player is never handed a half-written file |
+| POST | `/demo/ivr-language` | Twilio webhook for the "let them choose" IVR. Receives the pressed `Digits` and returns the alert TwiML in that language (1=Hindi, 2=English, 3=Japanese, 4=Punjabi, 5=Tamil, 6=Telugu, 7=Marathi, 8=Bengali, 9=Gujarati, 0=Kannada; no/unknown digit → Hindi) |
 | POST | `/demo/reply` | Twilio webhook for the two-way voice reply. `Digits=1` → confirm safe, `Digits=2` → needs help (escalates to the operator via Telegram, fire-and-forget), anything else → no-response. Returns a short spoken acknowledgement in the caller's language |
-| POST | `/demo/send-sms?phones=+91...&language=hindi&confirm=true` | Manually send the SMS alert (same `confirm=true` gate as voice). Also fires automatically as a fallback when a voice call is unanswered/failed |
-| GET | `/demo/recording-audio?sid=RExxxx` | Stream Twilio MP3 through backend (no browser auth) |
+| POST | `/demo/send-sms?phones=+91...&language=hindi&confirm=true` | Manually send the SMS alert (same `confirm=true` gate as voice). Also fires automatically as a fallback when a voice call is unanswered or fails |
+| GET | `/demo/recording-audio?sid=RExxxx` | Stream the Twilio MP3 through the backend (no browser auth) |
 | GET | `/aurora/predictions?kp=9.0` | Aurora visibility by location |
 | GET | `/shield/score` | Current Space Weather Score (0–100) |
-| GET | `/shield/daily-brief` | Full Hindi+English briefing |
+| GET | `/shield/daily-brief` | Full Hindi + English briefing |
 | GET | `/memory/storms` | 4 historical storms with KAVACH counterfactuals |
 | GET | `/memory/totals` | Aggregate stats across all storms |
 | GET | `/fusion/status` | Fused confidence score (DONKI + GOES + USGS) with explainability + mission acknowledgments |
@@ -181,7 +227,7 @@ npm run dev
 
 ---
 
-## Environment Variables
+## Environment variables
 
 ```bash
 # NASA
@@ -234,86 +280,96 @@ NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
 
 ---
 
-## Changing Demo Phone Numbers
+## Changing demo phone numbers
 
-KAVACH can call **multiple phones simultaneously** during the demo. Phone numbers live in `.env` as a comma-separated list:
+KAVACH can call **multiple phones simultaneously** during the demo. Numbers live in `.env` as a comma-separated list:
 
 ```env
 DEMO_PHONE_NUMBER=+919999999999,+918888888888,+917777777777
 ```
 
-### Local backend (running `python main.py`)
+**Local backend** (`python main.py`) — the backend re-reads `.env` on **every call**. No restart needed; edit `.env` and fire the next demo.
 
-The backend re-reads `.env` on **every call** — no restart needed. Just edit `.env` and fire the next demo.
-
-### Railway backend (deployed)
-
-Railway does not read your local `.env`. Use the sync script whenever you change numbers:
+**Railway backend** — Railway does not read your local `.env`. Use the sync script whenever numbers change:
 
 ```powershell
-# Sync only the phone number (fast, ~5 seconds)
-powershell -File sync_railway.ps1 -PhoneOnly
-
-# Sync all env vars (Twilio, NASA key, etc.)
-powershell -File sync_railway.ps1
+powershell -File sync_railway.ps1 -PhoneOnly   # phone only, ~5 seconds
+powershell -File sync_railway.ps1              # all env vars
 ```
 
-Railway auto-restarts after each sync. New numbers are live in ~10 seconds.
+Railway auto-restarts after each sync; new numbers are live in ~10 seconds.
 
 > **One-time setup:** run `railway link` once to connect the CLI to your project, then the script works from anywhere.
 
-### Fire a call manually (no demo needed)
+**Fire a call manually, no demo needed:**
 
 ```
 POST /demo/trigger-call?phones=+91XXXXXXXXXX,+91YYYYYYYYYY&language=hindi&confirm=true
 ```
 
-`confirm=true` is required whenever `phones` is passed — this is checked server-side (not just a frontend nicety), so a stray or scripted request without it gets a 400, not a call. The COMMAND tab also has a **CALL A REAL PHONE** panel that does this with a two-step confirm UI for live judge demos.
+`confirm=true` is required whenever `phones` is passed — checked server-side, not just a frontend nicety, so a stray or scripted request without it gets a 400, not a call. The COMMAND tab also has a **CALL A REAL PHONE** panel with a two-step confirm UI for live judge demos.
 
 ---
 
-## The Story Behind KAVACH
+## The story behind KAVACH
 
-The May 2024 storm was the largest in 20 years. Auroras appeared over Hanle Observatory in Ladakh — the first time in decades. India's power grid survived by luck, not design. The GPS systems guiding farmers' precision agriculture tractors failed without warning.
+The May 2024 storm was the largest in twenty years. Auroras appeared over Hanle Observatory in Ladakh, the first time in decades. India's power grid survived it on luck, not design — and the GPS guiding precision-agriculture tractors failed without warning.
 
-KAVACH is India's answer. One system. 28 grid utilities. 300 million people. Hindi voice calls on feature phones. No app required.
+KAVACH is the answer we could actually build. One system. 28 grid utilities. Hindi voice calls on feature phones. No app required.
 
 > Across 4 major storms since 2003, KAVACH would have fired **847 alerts** — warning farmers an average of **6 hours before peak impact**.
 
 ---
 
-## Revenue Model
+## Revenue model
 
 | Tier | Price | Value |
 |------|-------|-------|
-| Public | Free | Citizens, farmers, fishermen |
-| DISCOM API | ₹2–5L/month per utility | 4.5-hour advance warning |
-| 5 DISCOMs | ₹1.8Cr/year ARR | Protects ₹3,000Cr in transformer assets |
-| Future | Aviation · Telecom · Insurance APIs | Phase 2 expansion |
+| **Public** | Free | Citizens, farmers, fishermen |
+| **DISCOM API** | ₹2–5L / month per utility | 4.5-hour advance warning |
+| **5 DISCOMs** | ₹1.8 Cr / year ARR | Protects ₹3,000 Cr in transformer assets |
+| **Future** | Aviation · Telecom · Insurance APIs | Phase 2 expansion |
+
+A single avoided transformer failure costs a utility more than a year of licence. This sells as grid-resilience insurance, not software.
 
 ---
 
-## Delivered in Round 2
+## Recently shipped
 
 - ✅ **Multi-language expansion** — 10 languages with real Twilio TTS (Hindi, English, Japanese, Punjabi, Tamil, Telugu, Marathi, Bengali, Gujarati, Kannada), plus a "let them choose" spoken IVR menu on live calls
-- ✅ **Two-Way Voice Reply** — farmer presses 1 to confirm, 2 for help; pressing 2 escalates to a human operator via Telegram
-- ✅ **Automatic SMS fallback** — an unanswered/failed voice call auto-sends the same alert as an SMS
-- ✅ **DISCOM operator portal** — `/operator`, per-zone live risk + real alert/reply history
+- ✅ **Two-way voice reply** — farmer presses 1 to confirm, 2 for help; pressing 2 escalates to a human operator via Telegram
+- ✅ **Automatic SMS fallback** — an unanswered or failed voice call auto-sends the same alert as an SMS
+- ✅ **DISCOM operator portal** — `/operator`, per-zone live risk + real alert and reply history
 
 ## Still on the roadmap
 
 - **ISRO VEDAS integration** — ionospheric scintillation data (currently an honest `future_integration_target`, not presented as live)
-- **WhatsApp alerts** — endpoint exists (`/demo/send-whatsapp`, Twilio Sandbox) but not yet verified end-to-end; needs a Sandbox opt-in before it can be claimed working
+- **WhatsApp alerts** — endpoint exists (`/demo/send-whatsapp`, Twilio Sandbox) but is not yet verified end-to-end; needs a Sandbox opt-in before it can be claimed working
 - **Answering-machine detection tuning** — AMD is wired (`machine_detection=Enable`); the human-vs-voicemail split still needs real-call tuning
 - **Per-DISCOM alert attribution** — `alert_log` has no per-zone column yet, so the operator portal shows system-wide history (labelled as such)
 
 See `docs/future_features.md` for the full roadmap.
 
+> **A note on honesty.** Every capability above is labelled by what it actually does. Where a data source has no public live API (ISRO Aditya-L1, JAXA Hinode) it is shown as a mission acknowledgment, never as a live feed. Where a language has no confirmed TTS voice, `/demo/languages` says so. We would rather ship a smaller true claim than a larger one we can't demo.
+
 ---
 
-## Team
+## Team 404shinobi
 
-Built by **Team 404_SHINOBI** for FAR AWAY 2026. Concept to live deployment in 6 days.
+**Vibbhor Jain** · **Kartik** · **Ayush Gaurav** · **Nishchay Puri** · **Aarush Kashyap**
+
+Vivekananda Institute of Professional Studies – Technical Campus (VIPS-TC)
+
+---
+
+## Data sources & references
+
+- [NASA DONKI](https://ccmc.gsfc.nasa.gov/tools/DONKI/) — Space Weather Database Of Notifications, Knowledge, Information
+- [NOAA Space Weather Prediction Center](https://www.swpc.noaa.gov/) — planetary Kp index, G-scale classification, GOES X-ray flux
+- [USGS Geomagnetism Program](https://www.usgs.gov/programs/geomagnetism) — ground magnetometer observatory data
+- [Lloyd's of London](https://www.lloyds.com/insights/media-centre/press-releases/extreme-space-weather-scenario) — extreme space weather modelled at up to $2.4tn in global economic loss
+- Hydro-Québec, March 1989 — geomagnetically induced currents caused a nine-hour blackout affecting ~6 million people
+- May 2024 (Gannon) G5 storm — strongest in two decades; GNSS-guided farm equipment failures cost US growers an estimated $500 million
 
 ---
 
@@ -323,4 +379,12 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-*FAR AWAY 2026 · Submission deadline: June 14, 2026 · Team 404_SHINOBI*
+<div align="center">
+
+**The Sun will do this again.**
+
+The only question is whether India finds out from a blackout, or from a phone call.
+
+*Build with Bharat 2.0 · CodeVerse · Team 404shinobi*
+
+</div>
