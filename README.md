@@ -61,6 +61,7 @@ The person who needs the warning is the **recipient** of this system, never its 
 
 **Frontend** → https://frontend-rust-xi-79.vercel.app
 **Backend API** → https://kavach-backend-production-016f.up.railway.app
+**Demo video** → https://youtu.be/VEJf9mv4W28
 
 Click **REPLAY STORM** to relive the May 2024 G5 event — the map goes red across 28 zones and a Hindi voice call fires, in under 90 seconds.
 
@@ -338,7 +339,7 @@ The May 2024 storm was the largest in twenty years. Auroras appeared over Hanle 
 
 KAVACH is the answer we could actually build. One system. 28 grid utilities. Hindi voice calls on feature phones. No app required.
 
-> Across 4 major storms since 2003, KAVACH would have fired **847 alerts** — warning farmers an average of **6 hours before peak impact**.
+> Replayed against the real May 2024 G5 storm, KAVACH reaches **12,400 farmers** across all 28 DISCOM zones - roughly **4.5 hours ahead of peak impact**, with zero human triggers.
 
 ---
 
