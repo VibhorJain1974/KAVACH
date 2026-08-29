@@ -59,9 +59,9 @@ The person who needs the warning is the **recipient** of this system, never its 
 
 ## Live demo
 
-**Frontend** → https://frontend-rust-xi-79.vercel.app
-**Backend API** → https://kavach-backend-production-016f.up.railway.app
-**Demo video** → https://youtu.be/VEJf9mv4W28
+**Frontend** → [frontend-rust-xi-79.vercel.app](https://frontend-rust-xi-79.vercel.app)
+**Backend API** → [kavach-backend-production-016f.up.railway.app](https://kavach-backend-production-016f.up.railway.app)
+**Demo video** → [youtu.be/VEJf9mv4W28](https://youtu.be/VEJf9mv4W28)
 
 Click **REPLAY STORM** to relive the May 2024 G5 event — the map goes red across 28 zones and a Hindi voice call fires, in under 90 seconds.
 
