@@ -230,52 +230,69 @@ npm run dev
 ## Environment variables
 
 ```bash
-# NASA
-NASA_API_KEY=your_key_here
-
-# NOAA (default set in code)
+# --- Data sources ---
+NASA_API_KEY=your_nasa_api_key_here
 NOAA_KP_URL=https://services.swpc.noaa.gov/json/planetary_k_index_1m.json
 
-# Twilio
+# --- Autonomous polling ---
+POLL_INTERVAL_MINUTES=15
+STORM_ALERT_THRESHOLD_KP=5.0
+
+# --- Supabase ---
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # SUPABASE_KEY / SUPABASE_ANON_KEY also accepted
+SUPABASE_ANON_KEY=your_anon_key
+
+# --- Twilio ---
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
+TWILIO_DEMO_PHONE_NUMBER=            # optional dedicated demo-day caller ID; falls back to TWILIO_PHONE_NUMBER
+TWILIO_WHATSAPP_NUMBER=+14155238886  # Twilio Sandbox default
 DEMO_PHONE_NUMBER=+91XXXXXXXXXX,+91YYYYYYYYYY   # comma-separated for multiple simultaneous calls
 
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_service_role_key   # SUPABASE_SERVICE_ROLE_KEY also accepted
+# Public base URL of the backend. Required for the "choose your language" IVR
+# and the two-way reply webhook - Twilio must be able to POST to it.
+BACKEND_URL=https://your-backend.up.railway.app
 
-# Operator portal (shared demo key — NOT production access control)
+# --- Operator portal (shared demo key - NOT production access control) ---
 OPERATOR_PASSWORD=kavach-demo
+OPERATOR_ROSTER=                     # optional JSON array to override the default roster
 
-# Telegram operator escalation (optional — "press 2 needs help" alert).
+# --- Telegram operator escalation (optional - "press 2 needs help") ---
 # If unset, escalation degrades silently; the call is never affected.
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
 
-# Venue-safe offline mode — forces every wrapped external call (DONKI/GOES/USGS)
-# to serve cached or bundled fixture data instead of live-polling. Flip on if
-# venue wifi is unreliable; the demo replay still completes end-to-end.
+# --- Venue-safe offline mode ---
+# Forces every wrapped external call (DONKI/GOES/USGS) to serve cached or
+# bundled fixture data instead of live-polling. Flip on if venue wifi is
+# unreliable; the demo replay still completes end-to-end.
 DEMO_OFFLINE_MODE=false
 
-# Frontend (Vercel-served audio fallback, per language — used when a
-# language has no live TTS, or as a retry fallback if TTS fails)
+# --- Per-language audio fallback, served from the frontend ---
+# Used when a language has no live TTS voice, or as a retry if TTS fails.
 KAVACH_AUDIO_URL=https://your-frontend.vercel.app/hindi_alert.mp3
 KAVACH_AUDIO_URL_ENGLISH=https://your-frontend.vercel.app/alert_english.mp3
 KAVACH_AUDIO_URL_JAPANESE=https://your-frontend.vercel.app/alert_japanese.mp3
 KAVACH_AUDIO_URL_PUNJABI=https://your-frontend.vercel.app/alert_punjabi.mp3
-KAVACH_AUDIO_URL_TAMIL=https://your-frontend.vercel.app/alert_tamil.mp3   # Tamil has no confirmed live TTS voice — always uses this
+KAVACH_AUDIO_URL_TAMIL=https://your-frontend.vercel.app/alert_tamil.mp3     # no confirmed live TTS voice - always uses this
+KAVACH_AUDIO_URL_TELUGU=https://your-frontend.vercel.app/alert_telugu.mp3
+KAVACH_AUDIO_URL_MARATHI=https://your-frontend.vercel.app/alert_marathi.mp3
+KAVACH_AUDIO_URL_BENGALI=https://your-frontend.vercel.app/alert_bengali.mp3
+KAVACH_AUDIO_URL_GUJARATI=https://your-frontend.vercel.app/alert_gujarati.mp3
+KAVACH_AUDIO_URL_KANNADA=https://your-frontend.vercel.app/alert_kannada.mp3
 
-# Optional: TP-Link Kasa smart plug IP for the physical "beacon" light that
-# turns on when storm severity goes red during the demo. Leave unset to
-# disable entirely — nothing touches the network or the python-kasa
-# library if this is empty, and the demo behaves identically either way.
+# --- Optional physical demo beacon (TP-Link Kasa smart plug) ---
+# Leave empty to disable entirely - nothing touches the network or the
+# python-kasa library, and the demo behaves identically either way.
 BEACON_PLUG_IP=
 
-# Frontend .env.local
+# --- Frontend (.env.local) ---
 NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 ```
 
 ---
